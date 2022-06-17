@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @Time    : 2022/4/5 14:28
 # @Author  : west
-# @File    : reform_bayes_smooth.py
+# @File    : bayes_smooth.py
 # @Version : python 3.6
 # @Desc    :
 

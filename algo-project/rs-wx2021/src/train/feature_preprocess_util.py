@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @Time    : 2022/4/5 15:07
 # @Author  : west
-# @File    : reform_preprocess.py
+# @File    : feature_preprocess_util.py
 # @Version : python 3.6
 # @Desc    : 数据特征处理工具模块
 
@@ -62,12 +62,12 @@ TAG_KW_DIM = {
 CLS_COLS = ['feed_manu_tag_tfidf_cls_32', 'feed_machine_tag_tfidf_cls_32', 'feed_manu_kw_tfidf_cls_22',
             'feed_machine_kw_tfidf_cls_17', 'feed_description_tfidf_cls_18', 'author_manu_tag_tfidf_cls_19',
             'author_machine_tag_tfidf_cls_21', 'author_manu_kw_tfidf_cls_18', 'author_machine_kw_tfidf_cls_18',
-            'author_description_tfidf_cls_18']
+            'author_description_tfidf_cls_18']  # 聚类特征
 
 TOPIC_COLS = ['feed_manu_tag_topic_class', 'feed_machine_tag_topic_class', 'feed_manu_kw_topic_class',
               'feed_machine_kw_topic_class', 'feed_description_topic_class', 'author_description_topic_class',
               'author_manu_kw_topic_class', 'author_machine_kw_topic_class', 'author_manu_tag_topic_class',
-              'author_machine_tag_topic_class']
+              'author_machine_tag_topic_class']  # 主题特征
 
 pos_expr = "(read_comment==1)|(like==1)|(click_avatar==1)|(forward==1)|(favorite==1)|(comment==1)|(follow==1)"
 neg_expr = "(read_comment!=1)&(like!=1)&(click_avatar!=1)&(forward!=1)&(favorite!=1)&(comment!=1)&(follow!=1)"
@@ -123,7 +123,7 @@ def generate_encoder_models(outfile):
 def preprocess(feed_path, user_act_path, down_sample_neg_by_testid=False, drop_dup_action=True, log_trans=False,
                discretize=False, fill_bgm_na=False):
     """
-    预处理，合并表，生成数据
+    预处理，去重（保留一条user-feed正样本）
     down_sample_neg_by_testid:是否根据测试集userid，feedid来进行下采样
     :param feed_path:feed 数据
     :param user_act_path:user 数据
@@ -201,7 +201,7 @@ def preprocess(feed_path, user_act_path, down_sample_neg_by_testid=False, drop_d
     print("total data size: ", df_tot.shape[0])
 
     print("Preprocessing Done <<< <<< <<<")
-    if down_sample_neg_by_testid:  # 训练集仅使用测试集出现过的id
+    if down_sample_neg_by_testid:  # 训练集仅使用测试集出现过的id（冷启）
         test_a = pd.read_csv(f'{RAW_DATA_PATH}/test_a.csv', header=0)[['userid', 'feedid']]
         test_a[['userid', 'feedid']] = test_a[['userid', 'feedid']].astype(str)
         test_b = pd.read_csv(f'{RAW_DATA_PATH}/test_b.csv', header=0)[['userid', 'feedid']]
@@ -220,7 +220,7 @@ def down_sample(df, used_columns, sample_method=None, neg2pos_ratio=300, user_sa
     """
     对生成的数据下采样
     :param df:
-    :param used_columns:
+    :param used_columns:sparse+dense+action column
     :param sample_method:2种采样方式，随机负下采样和根据user进行下采样。根据user进行下采样能保证每个user的样本数量大致相同。
     :param neg2pos_ratio:负样本比正样本比率
     :param user_samp:用户采样方式
@@ -232,20 +232,20 @@ def down_sample(df, used_columns, sample_method=None, neg2pos_ratio=300, user_sa
     used_columns = used_columns[:] + ['date_']
     if list(df.head(5)['date_'])[0] == 15:  # 测试集直接不做抽样处理
         return df
-    if by_date is not None:
+    if by_date is not None:  # 选择时间进行抽样
         df = df.query(f'date_>={by_date}')
-    if sample_method is None:  #
+    if sample_method is None:  # 无抽样方法
         return df[used_columns]
-    elif sample_method == 'random':
+    elif sample_method == 'random':  # 随机抽样
         print("Sample_method == random")
-        df_val = df.query('date_==14').reset_index(drop=True)
-        df_pos = df.query(f'({pos_expr}) & (date_<14)')
-        df_neg = df.query(f'({neg_expr}) & (date_<14)')
+        df_val = df.query('date_==14').reset_index(drop=True)  # 验证集
+        df_pos = df.query(f'({pos_expr}) & (date_<14)')  # 有一次正行为的样本
+        df_neg = df.query(f'({neg_expr}) & (date_<14)')  # 全部为负行为的样本
 
         sample_num = len(df_pos) * neg2pos_ratio
         assert len(df_pos) * neg2pos_ratio <= len(
-            df_neg), f"Negative sample number({len(df_neg)}), is not enough for sampling({sample_num})!"
-        df_neg = df_neg.sample(n=sample_num, random_state=234)
+            df_neg), f"Negative sample number({len(df_neg)}), is not enough for sampling({sample_num})!"  # 正负样本比例小于1/300
+        df_neg = df_neg.sample(n=sample_num, random_state=234)  # 300倍负样本
         df_train = df_neg.append(df_pos).sample(frac=1., random_state=234).reset_index(drop=True)
         return df_train[used_columns].append(df_val[used_columns])
     else:  # sample_method=='user'
@@ -325,9 +325,10 @@ def process_features(df, used_sparse_feats, used_dense_feats, actions=ACTIONS,
     # 2. count #unique features for each sparse field,and record dense feature field name
     fixlen_feature_columns = [SparseFeat(feat, len(LBE_MODEL[feat].classes_) + 1, embedding_dim=emb_dim) for feat in
                               used_sparse_feats] + [DenseFeat(feat, 1, ) for feat in used_dense_feats]
+    # dnn_feature_columns == linear_feature_columns
     dnn_feature_columns = fixlen_feature_columns[:] + used_varlen_feats
     linear_feature_columns = fixlen_feature_columns[:] + used_varlen_feats
-
+    # 可去重
     feature_names = get_feature_names(linear_feature_columns + dnn_feature_columns)
 
     # 3. generate input data for model

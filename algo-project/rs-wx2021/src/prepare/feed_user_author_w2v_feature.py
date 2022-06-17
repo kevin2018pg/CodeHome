@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @Time    : 2022/3/29 20:35
 # @Author  : west
-# @File    : reform_w2v_feature.py
+# @File    : feed_user_author_w2v_feature.py
 # @Version : python 3.6
 # @Desc    : feed user author的w2v特征（step3）
 import csv

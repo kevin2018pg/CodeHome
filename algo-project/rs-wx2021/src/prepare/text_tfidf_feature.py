@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @Time    : 2022/3/18 20:21
 # @Author  : west
-# @File    : reform_feature.py
+# @File    : text_tfidf_feature.py
 # @Version : python 3.6
 # @Desc    : 基于id聚合的文本 tfidf 特征（step1）
 

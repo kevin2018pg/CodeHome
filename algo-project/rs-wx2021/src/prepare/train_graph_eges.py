@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @Time    : 2022/4/1 18:04
 # @Author  : west
-# @File    : reform_train_eges.py
+# @File    : train_graph_eges.py
 # @Version : python 3.6
 # @Desc    :基于EGES 训练 graph embedding
 
@@ -21,7 +21,7 @@ logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s -   %(message
 
 REFORM_DATA_PATH = '../../data/reform_data'
 FEED_PATH = f'{REFORM_DATA_PATH}/feed_author_text_features_fillna_by_author_clusters.pkl'
-PAIR_PATH = f'{REFORM_DATA_PATH}/eges/feed_pairs_eges_raw.pkl'  # '../my_data/eges/feed_pairs_eges.pkl'
+PAIR_PATH = f'{REFORM_DATA_PATH}/eges/feed_pairs_eges_raw.pkl'
 LBE_PATH = f'{REFORM_DATA_PATH}/eges/feed_lbe_dict.pkl'
 
 USED_COLS = ['feedid', 'authorid'] + ['feed_machine_tag_tfidf_cls_32', 'feed_machine_kw_tfidf_cls_17']

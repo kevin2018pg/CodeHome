@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @Time    : 2022/3/29 18:11
 # @Author  : west
-# @File    : reform_text_cluster_feature.py
+# @File    : text_cluster_feature.py
 # @Version : python 3.6
 # @Desc    : 文本特征tfidf聚类特征（step2）
 
