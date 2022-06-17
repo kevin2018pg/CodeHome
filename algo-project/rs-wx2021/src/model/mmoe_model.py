@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @Time    : 2022/4/7 21:38
 # @Author  : west
-# @File    : reform_mmoe.py
+# @File    : mmoe_model.py
 # @Version : python 3.6
 # @Desc    : 多目标mmoe
 

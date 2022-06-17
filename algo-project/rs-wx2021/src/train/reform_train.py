@@ -9,10 +9,9 @@ import gc
 import pickle
 import sys
 
-import reform_preprocess_util
-
 sys.path.append('../')
-from model.reform_mmoe import MOE
+import feature_preprocess_util
+from model.mmoe_model import MOE
 
 import logging
 
@@ -150,25 +149,25 @@ if __name__ == '__main__':
 
     # 加载预训练embedding weight matrix
     global user_emb_weight, author_emb_weight, feed_emb_weight, official_feed_weight
-    user_emb_weight = reform_preprocess_util.load_feature_pretrained_embedding(lbe_dict['userid'],
-                                                                               args['pretrained_model'][
-                                                                                   'userid_by_feed'], padding=True)
+    user_emb_weight = feature_preprocess_util.load_feature_pretrained_embedding(lbe_dict['userid'],
+                                                                                args['pretrained_model'][
+                                                                                    'userid_by_feed'], padding=True)
     # user_by_author_emb_weight = preprocess.load_feature_pretrained_embedding(lbe_dict['userid'],
     #                                                                          args['pretrained_model'][
     #                                                                              'userid_by_author'], padding=True)
-    author_emb_weight = reform_preprocess_util.load_feature_pretrained_embedding(lbe_dict['authorid'],
-                                                                                 args['pretrained_model']['authorid'],
-                                                                                 padding=True)
-    feed_emb_weight = reform_preprocess_util.load_feature_pretrained_embedding(lbe_dict['feedid'],
-                                                                               args['pretrained_model']['feedid'],
-                                                                               padding=True)
+    author_emb_weight = feature_preprocess_util.load_feature_pretrained_embedding(lbe_dict['authorid'],
+                                                                                  args['pretrained_model']['authorid'],
+                                                                                  padding=True)
+    feed_emb_weight = feature_preprocess_util.load_feature_pretrained_embedding(lbe_dict['feedid'],
+                                                                                args['pretrained_model']['feedid'],
+                                                                                padding=True)
     # feed_emb_weight_eges = preprocess.load_feature_pretrained_embedding(lbe_dict['feedid'],
     #                                                                     '../my_data/eges/feedid_eges0_emb.pkl',
     #                                                                     padding=True)
     # TODO official_feed_weight保存的是模型，后期加载方式与其他有区别
-    official_feed_weight = reform_preprocess_util.load_feature_pretrained_embedding(lbe_dict['feedid'],
-                                                                                    args['pretrained_model'][
-                                                                                        'official_feed'], padding=True)
+    official_feed_weight = feature_preprocess_util.load_feature_pretrained_embedding(lbe_dict['feedid'],
+                                                                                     args['pretrained_model'][
+                                                                                         'official_feed'], padding=True)
     logger.info('All used features:')
     logger.info(train_X.keys())
 
@@ -191,8 +190,8 @@ if __name__ == '__main__':
     for col in train_X:
         online_train_X[col] = np.concatenate((train_X[col], val_X[col]), axis=0)
     online_train_y = np.concatenate((train_y, val_y), axis=0)
-    online_train_loader = reform_preprocess_util.get_dataloader(online_train_X, _moe, online_train_y,
-                                                                batch_size=args['batch_size'], num_workers=7)
+    online_train_loader = feature_preprocess_util.get_dataloader(online_train_X, _moe, online_train_y,
+                                                                 batch_size=args['batch_size'], num_workers=7)
     del _moe
     gc.collect()
     # 测试
