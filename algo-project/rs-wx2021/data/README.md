@@ -1,6 +1,6 @@
 初赛数据介绍
-1. user_action.csv: 用户行为表
-2. feed_info.csv: Feed信息表
-3. feed_embeddings.csv: Feed向量表
-4. test_a.csv: A榜测试集
-5. submit_demo_chusai_a.csv: A榜提交结果demo
+1. user_action.csv: 用户行为数据
+2. feed_info.csv: Feed信息
+3. feed_embeddings.csv: Feed向量
+4. test_a.csv: 测试集
+5. submit_demo_chusai_a.csv: 提交结果
