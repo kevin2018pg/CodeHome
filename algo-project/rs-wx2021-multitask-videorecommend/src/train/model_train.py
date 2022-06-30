@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @Time    : 2022/4/7 21:28
 # @Author  : west
-# @File    : reform_train.py
+# @File    : model_train.py
 # @Version : python 3.6
 # @Desc    : 训练模块
 
