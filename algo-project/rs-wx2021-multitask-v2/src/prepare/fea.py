@@ -7,6 +7,7 @@
 
 import gc
 import logging
+import pickle
 import time
 
 import networkx as nx
@@ -16,7 +17,7 @@ from gensim.models import word2vec
 from joblib import Parallel, delayed
 from sklearn.decomposition import TruncatedSVD
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import LabelEncoder, MinMaxScaler
 from tqdm import tqdm
 
 from utils import reduce_mem, ProNE
@@ -423,7 +424,7 @@ def get_ctr_fea(df, all_stat_cols):
             stat_df = pd.concat([stat_df, tmp], axis=0, ignore_index=True)
         stat_df = reduce_mem(stat_df, stat_df.columns)
         m, n = stat_df.shape
-        stat_df.to_pickle(f"{feature_data_path}/{f}_{m}_{n}_{n_day}days_ctr_fea.pkl")
+        stat_df.to_pickle(f"{feature_data_path}/ctr_feas/{f}_{m}_{n}_{n_day}days_ctr_fea.pkl")
 
     n_jobs = len(all_stat_cols)
     all_stat_df = Parallel(n_jobs=n_jobs)(delayed(in_func)(col) for col in all_stat_cols)
@@ -462,7 +463,7 @@ def get_stat_fea(df, all_stat_cols):
         stat_df = reduce_mem(stat_df, stat_df.columns)
 
         m, n = stat_df.shape
-        stat_df.to_pickle(f"{feature_data_path}/{f}_{m}_{n}_{n_day}day_stat_fea.pkl")
+        stat_df.to_pickle(f"{feature_data_path}/stat_feas/{f}_{m}_{n}_{n_day}day_stat_fea.pkl")
 
     n_jobs = len(all_stat_cols)
     all_stat_df = Parallel(n_jobs=n_jobs)(delayed(in_func)(col) for col in all_stat_cols)
@@ -475,3 +476,236 @@ get_stat_fea(df, all_stat_cols[7:])
 count_feas = []
 for f in tqdm(['userid', 'feedid', 'authorid', 'tag1', 'keyword1', 'bgm_song_id', 'bgm_singer_id']):
     df[f + '_count_global'] = df[f].map(df[f].value_counts())
+
+for f1, f2 in tqdm([['userid', 'feedid'], ['userid', 'authorid'], ['userid', 'tag1'], ['userid', 'keyword1'],
+                    ['userid', 'bgm_song_id'], ['userid', 'bgm_singer_id']]):
+    df[f'{f1}_in_{f2}_nunique_global'] = df.groupby(f2)[f1].transform('nunique')
+    df[f'{f1}_in_{f2}_nuni_div_cnt_global'] = df[f'{f1}_in_{f2}_nunique_global'] / df[f2 + '_count_global']
+    df[f'{f2}_in_{f1}_nunique_global'] = df.groupby(f1)[f2].transform('nunique')
+    df[f'{f2}_in_{f1}_nuni_div_cnt_global'] = df[f'{f2}_in_{f1}_nunique_global'] / df[f1 + '_count_global']
+
+# for f1, f2 in tqdm([['userid', 'authorid'], ['userid', 'tag1'], ['userid', 'keyword1'],
+#                     ['userid', 'bgm_song_id'], ['userid', 'bgm_singer_id'],]):
+#     df['{}_{}_count'.format(f1, f2)] = df.groupby([f1, f2])['date_'].transform('count')
+#     df['{}_in_{}_count_prop'.format(f1, f2)] = df['{}_{}_count'.format(f1, f2)] / (df[f2 + '_count'] + 1)
+#     df['{}_in_{}_count_prop'.format(f2, f1)] = df['{}_{}_count'.format(f1, f2)] / (df[f1 + '_count'] + 1)
+
+df['videoplayseconds_in_userid_mean_global'] = df.groupby('userid')['videoplayseconds'].transform('mean')
+df['videoplayseconds_in_authorid_mean_global'] = df.groupby('authorid')['videoplayseconds'].transform('mean')
+df['videoplayseconds_in_keyword1_mean_global'] = df.groupby('keyword1')['videoplayseconds'].transform('mean')
+df['videoplayseconds_in_tag1_mean_global'] = df.groupby('tag1')['videoplayseconds'].transform('mean')
+df['videoplayseconds_in_bgm_song_id_mean_global'] = df.groupby('bgm_song_id')['videoplayseconds'].transform('mean')
+df['videoplayseconds_in_bgm_singer_id_mean_global'] = df.groupby('bgm_singer_id')['videoplayseconds'].transform('mean')
+
+df['feedid_in_authorid_nunique_global'] = df.groupby('authorid')['feedid'].transform('nunique')
+
+del df['userid_in_feedid_nuni_div_cnt_global'], df['feedid_in_userid_nuni_div_cnt_global']
+gc.collect()
+
+userid_global_fea_cols = ['userid', 'userid_count_global', 'feedid_in_userid_nunique_global',
+                          'authorid_in_userid_nunique_global', 'authorid_in_userid_nuni_div_cnt_global',
+                          'tag1_in_userid_nunique_global', 'tag1_in_userid_nuni_div_cnt_global',
+                          'keyword1_in_userid_nunique_global', 'keyword1_in_userid_nuni_div_cnt_global',
+                          'bgm_song_id_in_userid_nunique_global', 'bgm_song_id_in_userid_nuni_div_cnt_global',
+                          'bgm_singer_id_in_userid_nunique_global', 'bgm_singer_id_in_userid_nuni_div_cnt_global',
+                          'videoplayseconds_in_userid_mean_global']
+feedid_global_fea_cols = ['feedid', 'feedid_count_global', 'userid_in_feedid_nunique_global']
+authorid_global_fea_cols = ['authorid', 'authorid_count_global', 'userid_in_authorid_nunique_global',
+                            'userid_in_authorid_nuni_div_cnt_global', 'videoplayseconds_in_authorid_mean_global',
+                            'feedid_in_authorid_nunique_global']
+tag1_global_fea_cols = ['tag1', 'tag1_count_global', 'userid_in_tag1_nunique_global',
+                        'userid_in_tag1_nuni_div_cnt_global', 'videoplayseconds_in_tag1_mean_global']
+keyword1_global_fea_cols = ['keyword1', 'keyword1_count_global', 'userid_in_keyword1_nunique_global',
+                            'userid_in_keyword1_nuni_div_cnt_global', 'videoplayseconds_in_keyword1_mean_global']
+bgm_song_id_global_fea_cols = ['bgm_song_id', 'bgm_song_id_count_global', 'userid_in_bgm_song_id_nunique_global',
+                               'userid_in_bgm_song_id_nuni_div_cnt_global',
+                               'videoplayseconds_in_bgm_song_id_mean_global']
+bgm_singer_id_global_fea_cols = ['bgm_singer_id', 'bgm_singer_id_count_global',
+                                 'userid_in_bgm_singer_id_nunique_global',
+                                 'userid_in_bgm_singer_id_nuni_div_cnt_global',
+                                 'videoplayseconds_in_bgm_singer_id_mean_global']
+print(len(
+    userid_global_fea_cols + feedid_global_fea_cols + authorid_global_fea_cols + tag1_global_fea_cols + keyword1_global_fea_cols + bgm_song_id_global_fea_cols + bgm_singer_id_global_fea_cols))
+
+userid_global_fea = df[userid_global_fea_cols]
+userid_global_fea.drop_duplicates(inplace=True)
+print('userid_global_fea shape:', userid_global_fea.shape)
+
+feedid_global_fea = df[feedid_global_fea_cols]
+feedid_global_fea.drop_duplicates(inplace=True)
+print('feedid_global_fea shape:', feedid_global_fea.shape)
+
+authorid_global_fea = df[authorid_global_fea_cols]
+authorid_global_fea.drop_duplicates(inplace=True)
+print('authorid_global_fea shape:', authorid_global_fea.shape)
+
+keyword1_global_fea = df[keyword1_global_fea_cols]
+keyword1_global_fea.drop_duplicates(inplace=True)
+print('keyword1_global_fea shape:', keyword1_global_fea.shape)
+
+tag1_global_fea = df[tag1_global_fea_cols]
+tag1_global_fea.drop_duplicates(inplace=True)
+print('tag1_global_fea shape:', tag1_global_fea.shape)
+
+bgm_song_id_global_fea = df[bgm_song_id_global_fea_cols]
+bgm_song_id_global_fea.drop_duplicates(inplace=True)
+print('bgm_song_id_global_fea shape:', bgm_song_id_global_fea.shape)
+
+bgm_singer_id_global_fea = df[bgm_singer_id_global_fea_cols]
+bgm_singer_id_global_fea.drop_duplicates(inplace=True)
+print('bgm_singer_id_global_fea shape:', bgm_singer_id_global_fea.shape)
+
+userid_global_fea.to_pickle(f"{feature_data_path}/global_feas/userid_global_fea.pkl")
+feedid_global_fea.to_pickle(f"{feature_data_path}/global_feas/feedid_global_fea.pkl")
+authorid_global_fea.to_pickle(f"{feature_data_path}/global_feas/authorid_global_fea.pkl")
+keyword1_global_fea.to_pickle(f"{feature_data_path}/global_feas/keyword1_global_fea.pkl")
+tag1_global_fea.to_pickle(f"{feature_data_path}/global_feas/tag1_global_fea.pkl")
+bgm_song_id_global_fea.to_pickle(f"{feature_data_path}/global_feas/bgm_song_id_global_fea.pkl")
+bgm_singer_id_global_fea.to_pickle(f"{feature_data_path}/global_feas/bgm_singer_id_global_fea.pkl")
+
+
+## 整理所有手工特征，并且进行归一化
+def normalize(df, col):
+    for c in col:
+        x = df[c].astype(np.float32)
+        x = np.log(x + 1.0)
+        mms = MinMaxScaler()
+        x = mms.fit_transform(x.values.reshape(-1, 1))
+        df[c] = x.reshape(-1).astype(np.float16)
+        df[c] = df[c].fillna(0.0)
+    return df
+
+
+# 全局统计特征归一化
+# 缺失值处理
+keyword1_global_fea.loc[keyword1_global_fea['keyword1'] == 0, keyword1_global_fea.columns[1:]] = 0
+bgm_song_id_global_fea.loc[bgm_song_id_global_fea['bgm_song_id'] == -1, bgm_song_id_global_fea.columns[1:]] = 0
+bgm_singer_id_global_fea.loc[bgm_singer_id_global_fea['bgm_singer_id'] == -1, bgm_singer_id_global_fea.columns[1:]] = 0
+
+userid_global_fea = normalize(userid_global_fea, userid_global_fea.columns[1:])
+feedid_global_fea = normalize(feedid_global_fea, feedid_global_fea.columns[1:])
+authorid_global_fea = normalize(authorid_global_fea, authorid_global_fea.columns[1:])
+keyword1_global_fea = normalize(keyword1_global_fea, keyword1_global_fea.columns[1:])
+tag1_global_fea = normalize(tag1_global_fea, tag1_global_fea.columns[1:])
+bgm_song_id_global_fea = normalize(bgm_song_id_global_fea, bgm_song_id_global_fea.columns[1:])
+bgm_singer_id_global_fea = normalize(bgm_singer_id_global_fea, bgm_singer_id_global_fea.columns[1:])
+
+# ctr特征归一化
+uid_ctr = pd.read_pickle("../data/features/ctr_feas/userid_1843213_16_5days_ctr_fea.pkl")
+fid_ctr = pd.read_pickle("../data/features/ctr_feas/feedid_736591_16_5days_ctr_fea.pkl")
+aid_ctr = pd.read_pickle("../data/features/ctr_feas/authorid_158013_16_5days_ctr_fea.pkl")
+kw1_ctr = pd.read_pickle("../data/features/ctr_feas/keyword1_24661_16_5days_ctr_fea.pkl")
+kw1_ctr.loc[kw1_ctr['keyword1'] == 0, kw1_ctr.columns[2:]] = 0
+tag1_ctr = pd.read_pickle("../data/features/ctr_feas/tag1_2494_16_5days_ctr_fea.pkl")
+bgm_song_ctr = pd.read_pickle("../data/features/ctr_feas/bgm_song_id_188669_16_5days_ctr_fea.pkl")
+bgm_song_ctr.loc[bgm_song_ctr['bgm_song_id'] == -1, bgm_song_ctr.columns[2:]] = 0
+bgm_singer_ctr = pd.read_pickle("../data/features/ctr_feas/bgm_singer_id_134256_16_5days_ctr_fea.pkl")
+bgm_singer_ctr.loc[bgm_singer_ctr['bgm_singer_id'] == -1, bgm_singer_ctr.columns[2:]] = 0
+
+uid_ctr = normalize(uid_ctr, uid_ctr.columns[2:])
+fid_ctr = normalize(fid_ctr, fid_ctr.columns[2:])
+aid_ctr = normalize(aid_ctr, aid_ctr.columns[2:])
+kw1_ctr = normalize(kw1_ctr, kw1_ctr.columns[2:])
+tag1_ctr = normalize(tag1_ctr, tag1_ctr.columns[2:])
+bgm_song_ctr = normalize(bgm_song_ctr, bgm_song_ctr.columns[2:])
+bgm_singer_ctr = normalize(bgm_singer_ctr, bgm_singer_ctr.columns[2:])
+
+print(uid_ctr.shape, fid_ctr.shape, aid_ctr.shape, kw1_ctr.shape, tag1_ctr.shape, bgm_song_ctr.shape,
+      bgm_singer_ctr.shape)
+
+# stat特征归一化
+uid_stat = pd.read_pickle("../data/features/stat_feas/userid_1843213_16_5day_stat_fea.pkl")
+fid_stat = pd.read_pickle("../data/features/stat_feas/feedid_736591_16_5day_stat_fea.pkl")
+aid_stat = pd.read_pickle("../data/features/stat_feas/authorid_158013_16_5day_stat_fea.pkl")
+kw1_stat = pd.read_pickle("../data/features/stat_feas/keyword1_24661_16_5day_stat_fea.pkl")
+kw1_stat.loc[kw1_stat['keyword1'] == 0, kw1_stat.columns[2:]] = 0
+tag1_stat = pd.read_pickle("../data/features/stat_feas/tag1_2494_16_5day_stat_fea.pkl")
+
+bgm_song_stat = pd.read_pickle("../data/features/stat_feas/bgm_song_id_188669_16_5day_stat_fea.pkl")
+bgm_song_stat.loc[bgm_song_stat['bgm_song_id'] == -1, bgm_song_stat.columns[2:]] = 0
+bgm_singer_stat = pd.read_pickle("../data/features/stat_feas/bgm_singer_id_134256_16_5day_stat_fea.pkl")
+bgm_singer_stat.loc[bgm_singer_stat['bgm_singer_id'] == -1, bgm_singer_stat.columns[2:]] = 0
+
+uid_stat = normalize(uid_stat, uid_stat.columns[2:])
+fid_stat = normalize(fid_stat, fid_stat.columns[2:])
+aid_stat = normalize(aid_stat, aid_stat.columns[2:])
+kw1_stat = normalize(kw1_stat, kw1_stat.columns[2:])
+tag1_stat = normalize(tag1_stat, tag1_stat.columns[2:])
+bgm_song_stat = normalize(bgm_song_stat, bgm_song_stat.columns[2:])
+bgm_singer_stat = normalize(bgm_singer_stat, bgm_singer_stat.columns[2:])
+
+## 关联归一化后三大类特征
+userid_stat_fea = uid_ctr.merge(uid_stat, how='left', on=['userid', 'date_'])
+userid_stat_fea = userid_stat_fea.merge(userid_global_fea, how='left', on=['userid'])
+
+feedid_stat_fea = fid_ctr.merge(fid_stat, how='left', on=['feedid', 'date_'])
+feedid_stat_fea = feedid_stat_fea.merge(feedid_global_fea, how='left', on=['feedid'])
+
+authorid_stat_fea = aid_ctr.merge(aid_stat, how='left', on=['authorid', 'date_'])
+authorid_stat_fea = authorid_stat_fea.merge(authorid_global_fea, how='left', on=['authorid'])
+
+keyword1_stat_fea = kw1_ctr.merge(kw1_stat, how='left', on=['keyword1', 'date_'])
+keyword1_stat_fea = keyword1_stat_fea.merge(keyword1_global_fea, how='left', on=['keyword1'])
+
+tag1_stat_fea = tag1_ctr.merge(tag1_stat, how='left', on=['tag1', 'date_'])
+tag1_stat_fea = tag1_stat_fea.merge(tag1_global_fea, how='left', on=['tag1'])
+
+bgm_song_id_stat_fea = bgm_song_ctr.merge(bgm_song_stat, how='left', on=['bgm_song_id', 'date_'])
+bgm_song_id_stat_fea = bgm_song_id_stat_fea.merge(bgm_song_id_global_fea, how='left', on=['bgm_song_id'])
+
+bgm_singer_id_stat_fea = bgm_singer_ctr.merge(bgm_singer_stat, how='left', on=['bgm_singer_id', 'date_'])
+bgm_singer_id_stat_fea = bgm_singer_id_stat_fea.merge(bgm_singer_id_global_fea, how='left', on=['bgm_singer_id'])
+
+print(userid_stat_fea.shape, feedid_stat_fea.shape, authorid_stat_fea.shape, keyword1_stat_fea.shape,
+      tag1_stat_fea.shape, bgm_song_id_stat_fea.shape, bgm_singer_id_stat_fea.shape)
+
+
+def get_emb_hash(df):
+    res = {}
+    for line in tqdm(df.values):
+        res[(int(line[0]), int(line[1]))] = line[2:].astype(np.float32)
+    return res
+
+
+userid_2_stat_fea = get_emb_hash(userid_stat_fea)
+feedid_2_stat_fea = get_emb_hash(feedid_stat_fea)
+authorid_2_stat_fea = get_emb_hash(authorid_stat_fea)
+bgm_song_id_2_stat_fea = get_emb_hash(bgm_song_id_stat_fea)
+bgm_singer_id_2_stat_fea = get_emb_hash(bgm_singer_id_stat_fea)
+keyword1_2_stat_fea = get_emb_hash(keyword1_stat_fea)
+tag1_2_stat_fea = get_emb_hash(tag1_stat_fea)
+
+pickle.dump([userid_stat_fea, feedid_2_stat_fea, authorid_2_stat_fea, bgm_song_id_2_stat_fea, bgm_singer_id_2_stat_fea,
+             keyword1_2_stat_fea, tag1_2_stat_fea], open(f"{feature_data_path}/singer_col_stat_feas.pkl", 'wb'))
+
+## 读取训练集
+train = pd.read_pickle((reform_data_path + '/user_action.pkl'))
+train = train[train['date_'] >= 6].reset_index(drop=True)
+print(train.shape)
+## 读取测试集
+test = pd.read_pickle((reform_data_path + '/test_a.pkl'))
+test['date_'] = 15
+print(test.shape)
+df = pd.concat([train, test], ignore_index=True)
+print(df.shape)
+df = reduce_mem(df, df.columns)
+del train, test
+gc.collect()
+
+# feed侧信息
+feed_info = pd.read_pickle(f'{feature_data_path}/feed_info.pkl')
+feed_info.drop(columns=['all_keyword', 'all_tag'], inplace=True)
+feed_info = reduce_mem(feed_info, feed_info.columns)
+print(feed_info.shape)
+df = df.merge(feed_info, how='left', on=['feedid'])
+df.drop(columns=['play', 'stay'], inplace=True)
+play_cols = ['is_finish', 'play_times', 'stay_times', 'play', 'stay']
+y_list = ['read_comment', 'like', 'click_avatar', 'forward', 'favorite', 'comment', 'follow']
+max_day = 15
+train = df[(df['date_'] >= 6) & (df['date_'] <= 14)].reset_index(drop=True)
+test = df[df['date_'] == 15].reset_index(drop=True)
+print(train.shape, test.shape)
+del df
+gc.collect()
+train.to_pickle(f"{feature_data_path}/train_v0.pkl")
+test.to_pickle(f"{feature_data_path}/test_v0.pkl")
