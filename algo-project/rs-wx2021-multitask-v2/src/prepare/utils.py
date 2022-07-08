@@ -5,6 +5,7 @@
 # @Desc    : utils
 
 import gc
+import logging
 import time
 
 import numpy as np
@@ -165,3 +166,23 @@ class ProNE():
                                                                                                        ascending=True).reset_index(
             drop=True)
         return self.embeddings
+
+
+def get_logger(log_path):
+    # 第一步，创建一个logger
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
+    # 第二步，创建一个handler，用于写入日志文件
+    fh = logging.FileHandler(log_path, mode='w')
+    fh.setLevel(logging.INFO)
+    # 第三步，再创建一个handler，用于输出到控制台
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.INFO)
+    # 第四步，定义handler的输出格式（时间，文件，行数，错误级别，错误提示）
+    formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(name)s - %(message)s", '%m/%d/%Y %H:%M:%S')
+    fh.setFormatter(formatter)
+    ch.setFormatter(formatter)
+    # 第五步，将logger添加到handler里面
+    logger.addHandler(fh)
+    logger.addHandler(ch)
+    return logger
