@@ -7,13 +7,16 @@
 import gc
 import logging
 import time
+from collections import defaultdict
 
 import numpy as np
 import pandas as pd
 import scipy
 import scipy.sparse as sp
+from numba import njit
 from scipy import linalg
 from scipy.special import iv
+from scipy.stats import rankdata
 from sklearn import preprocessing
 from sklearn.utils.extmath import randomized_svd
 from tqdm import tqdm
@@ -186,3 +189,50 @@ def get_logger(log_path):
     logger.addHandler(fh)
     logger.addHandler(ch)
     return logger
+
+
+# uauc 计算
+@njit
+def _auc(actual, pred_ranks):
+    n_pos = np.sum(actual)
+    n_neg = len(actual) - n_pos
+    return (np.sum(pred_ranks[actual == 1]) - n_pos * (n_pos + 1) / 2) / (n_pos * n_neg)
+
+
+def fast_auc(actual, predicted):
+    # https://www.kaggle.com/c/riiid-test-answer-prediction/discussion/208031
+    pred_ranks = rankdata(predicted)
+    return _auc(actual, pred_ranks)
+
+
+def uAUC(labels, preds, user_id_list):
+    """Calculate user AUC"""
+    user_pred = defaultdict(lambda: [])
+    user_truth = defaultdict(lambda: [])
+    for idx, truth in enumerate(labels):
+        user_id = user_id_list[idx]
+        pred = preds[idx]
+        truth = labels[idx]
+        user_pred[user_id].append(pred)
+        user_truth[user_id].append(truth)
+
+    user_flag = defaultdict(lambda: False)
+    for user_id in set(user_id_list):
+        truths = user_truth[user_id]
+        flag = False
+        # 若全是正样本或全是负样本，则flag为False
+        for i in range(len(truths) - 1):
+            if truths[i] != truths[i + 1]:
+                flag = True
+                break
+        user_flag[user_id] = flag
+
+    total_auc = 0.0
+    size = 0.0
+    for user_id in user_flag:
+        if user_flag[user_id]:
+            auc = fast_auc(np.asarray(user_truth[user_id]), np.asarray(user_pred[user_id]))
+            total_auc += auc
+            size += 1.0
+    user_auc = float(total_auc) / size
+    return round(user_auc, 6)

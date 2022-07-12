@@ -13,14 +13,17 @@ import numpy as np
 import pandas as pd
 import torch
 import torch.nn as nn
-from deepctr_torch.inputs import SparseFeat, DenseFeat, get_feature_names
+import torch.nn.functional as F
+import torch.optim as optim
+from deepctr_torch.inputs import SparseFeat, DenseFeat, get_feature_names, combined_dnn_input
 from deepctr_torch.layers import DNN
 from deepctr_torch.layers.interaction import BiInteractionPooling
 from deepctr_torch.layers.sequence import AttentionSequencePoolingLayer
 from deepctr_torch.models.basemodel import BaseModel
 from torch.utils.data import Dataset, DataLoader, RandomSampler, SequentialSampler
+from tqdm import tqdm
 
-from utils import get_logger
+from utils import get_logger, uAUC
 
 pd.set_option('display.max_columns', None)
 # data_path
@@ -198,13 +201,6 @@ print("emb_fea_nums:", emb_fea_nums)
 print(len(sparse_features), len(dense_features))
 print(len(sparse_features) + len(dense_features) + dense_fea_nums + emb_fea_nums)
 
-## 划分训练测试集
-train = df[df['date_'] <= 14].reset_index(drop=True)
-test = df[df['date_'] == 15].reset_index(drop=True)
-del df
-gc.collect()
-print("train & test shape:", train.shape, test.shape)
-
 
 # 模型：DNN作为主编码器
 class MMOE_DNN(BaseModel):
@@ -257,11 +253,143 @@ class MMOE_DNN(BaseModel):
         self.sigmoid = nn.Sigmoid()
         self.to(device)
 
-    def forward(self):
-        pass
+    def forward(self, X, fids=None, fids_length=None):
+        sparse_embedding_list, dense_value_list = self.input_from_feature_columns(X, self.dnn_feature_columns,
+                                                                                  self.embedding_dict)
+        if self.use_fm and len(sparse_embedding_list) > 0:
+            fm_input = torch.cat(sparse_embedding_list, dim=1)  # [bs, n, emb_dim]
+            fm_out = self.fm(fm_input)  # [bs, 1,emb_dim]
+            fm_out = fm_out.squeeze(1)  # [bs, emb_dim]
+        if self.use_din:
+            fid_emb_query = self.feedid_emb_din(
+                X[:, self.feature_index['feedid'][0]:self.feature_index['feedid'][1]].long())
+            fid_emb_key = self.feedid_emb_din(fids)
+            # fid_emb_key_lstm, _ = self.LSTM_din(fid_emb_key)  # [bs, sl, emb_size]
+            # fid_emb_key = fid_emb_key + fid_emb_key_lstm
+            fid_din = self.attention(fid_emb_query, fid_emb_key, fids_length)  # [bs, 1, emb_size]
+            din_out = fid_din.squeeze(1)
+        if self.use_dnn:
+            dnn_input = combined_dnn_input(sparse_embedding_list, dense_value_list)
+            dnn_out = self.dnn(dnn_input)  # [bs, dnn_hidden_units[-1]]
+            if self.use_fm and self.use_din:
+                aux_out = torch.cate([fm_out, din_out], dim=-1)
+                aux_out = self.dnn_aux(aux_out)  # [bs, dnn_hidden_units[-1]]
+                dnn_out = torch.cat([dnn_out, aux_out], dim=-1)
+
+        # 每个mmoe的输出
+        mmoe_outs = []
+        expert_out = self.expert_kernel(dnn_out)  # [bs, num_experts * expert_dim]
+        expert_out = expert_out.view(-1, self.expert_dim, self.num_experts)  # [bs, expert_dim, num_experts]
+
+        for i in range(self.num_tasks):
+            # gate_out_aux = self.gate_mlp[i](X[:, 13:245])
+            # gate_input = torch.cat([dnn_out, gate_out_aux], dim=-1)
+            gate_out = self.gate_kernels[i](dnn_out)  # [bs, num_experts]
+            gate_out = self.gate_softmax(gate_out)  # [bs, num_experts]
+            gate_out = gate_out.unsqueeze(1).expand_as(expert_out)  # [bs, expert_dim, num_experts]
+            output = torch.sum(expert_out * gate_out, 2)  # [bs, expert_dim]
+            mmoe_outs.append(output)
+        task_outputs = []
+        for idx, mmoe_out in enumerate(mmoe_outs):
+            output = self.sigmoid(self.cls[idx](mmoe_out))
+            task_outputs.append(output)
+        return task_outputs
 
 
-# submit
+# 打印模型参数
+def get_parameter_number(model):
+    total_num = sum(p.numel() for p in model.parameters())
+    trainable_num = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    return {'Total': total_num, 'Trainable': trainable_num}
+
+
+def predict(model, test_loader, device):
+    model.eval()
+    pred_1, pred_2, pred_3, pred_4, pred_5, pred_6, pred_7 = [], [], [], [], [], [], []
+    with torch.no_grad():
+        for x in tqdm(test_loader):
+            y_pred = model(x[0].to(device))
+            pred_1.extend(y_pred[0].cpu().data.numpy().squeeze().tolist())
+            pred_2.extend(y_pred[1].cpu().data.numpy().squeeze().tolist())
+            pred_3.extend(y_pred[2].cpu().data.numpy().squeeze().tolist())
+            pred_4.extend(y_pred[3].cpu().data.numpy().squeeze().tolist())
+            pred_5.extend(y_pred[4].cpu().data.numpy().squeeze().tolist())
+            pred_6.extend(y_pred[5].cpu().data.numpy().squeeze().tolist())
+            pred_7.extend(y_pred[6].cpu().data.numpy().squeeze().tolist())
+    return (pred_1, pred_2, pred_3, pred_4, pred_5, pred_6, pred_7)
+
+
+def evaluate(model, valid_loader, val_x, device):
+    actions = ['read_comment', 'like', 'click_avatar', 'favorite', 'forward', 'comment', 'follow']
+    pred_ans = predict(model, valid_loader, device)
+    uauc_list = []
+    for i in range(len(actions)):
+        assert len(val_x[actions[i]].values) == len(pred_ans[i]) == len(val_x['userid'].values)
+        uauc_list.append(uAUC(val_x[actions[i]].values, pred_ans[i], val_x['userid'].values))
+    return round(np.average(uauc_list, weights=[4, 3, 2, 1, 1, 1, 1]), 6), uauc_list
+
+
+def train_model(model, train_loader, valid_loader, val_x, optimizer, epochs, device, model_save_file):
+    train_bs = len(train_loader)
+    best_score = 0.0
+    patience = 0
+    for epoch in range(epochs):
+        logger.info("======= epoch {} ======".format(epoch + 1))
+        model.train()
+        start_time = time.time()
+        total_loss_sum = 0
+        time.sleep(1.0)
+        for idx, (out) in tqdm(enumerate(train_loader)):
+            y = out[-1].to(device)
+            y_pred = model(out[0].to(device))
+            loss1 = F.binary_cross_entropy(y_pred[0].squeeze(), y[:, 0])
+            loss2 = F.binary_cross_entropy(y_pred[1].squeeze(), y[:, 1])
+            loss3 = F.binary_cross_entropy(y_pred[2].squeeze(), y[:, 2])
+            loss4 = F.binary_cross_entropy(y_pred[3].squeeze(), y[:, 3])
+            loss5 = F.binary_cross_entropy(y_pred[4].squeeze(), y[:, 4])
+            loss6 = F.binary_cross_entropy(y_pred[5].squeeze(), y[:, 5])
+            loss7 = F.binary_cross_entropy(y_pred[6].squeeze(), y[:, 6])
+            loss = loss1 + loss2 + loss3 + loss4 + loss5 + loss6 + loss7
+
+            reg_loss = model.module.get_regularization_loss()
+            total_loss = loss + reg_loss
+            total_loss.backward()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+
+            optimizer.step()
+            optimizer.zero_grad()
+            total_loss_sum += total_loss.item()
+            if idx + 1 == train_bs:
+                time.sleep(0.5)
+                LR = optimizer.state_dict()['param_groups'][0]['lr']
+                logger.info(
+                    "Epoch {:03d} | Step {:04d} / {} | Loss {:.4f} | Reg Loss {:.4f}| LR {:.5f} | Time {:.4f}".format(
+                        epoch + 1, idx + 1, train_bs, total_loss_sum / (idx + 1), reg_loss.item(), LR,
+                        time.time() - start_time))
+        time.sleep(0.5)
+        score, uAUC_list = evaluate(model, valid_loader, val_x, device)
+        logger.info("Epoch:{} 结束，验证集uAUC = {}".format(epoch + 1, score))
+        logger.info("uAUC list {}".format(uAUC_list))
+        if score > best_score:
+            best_score = score
+            patience = 0
+            model_to_save = model.module if hasattr(model, 'module') else model
+            torch.save(model_to_save.state_dict(), f'{model_path}/{model_save_file}')
+        else:
+            patience += 1
+        logger.info("Valid cur uAUC = {}, Valid best uAUC = {}, Cost Time {:.2f}".format(score, best_score,
+                                                                                         time.time() - start_time))
+        if patience >= 2:
+            logger.info("Early Stopped! ")
+            break
+
+
+## 划分训练测试集
+train = df[df['date_'] <= 14].reset_index(drop=True)
+test = df[df['date_'] == 15].reset_index(drop=True)
+del df
+gc.collect()
+print("train & test shape:", train.shape, test.shape)
 
 for date_ in [14]:
     start_time = time.time()
@@ -308,3 +436,45 @@ for date_ in [14]:
         device = 'cuda:0'
 
     # 定义模型
+    model = MMOE_DNN(linear_feature_columns=linear_feature_columns, dnn_feature_columns=dnn_feature_columns,
+                     embed_dim=emb_size, use_fm=False, use_din=False, dnn_use_bn=True,
+                     dnn_hidden_units=(2048, 1024, 512, 256), init_std=0.0001, dnn_dropout=0.5, task='binary',
+                     l2_reg_embedding=1e-5, l2_reg_linear=0.0, l2_reg_dnn=0.0, device=device, num_tasks=7,
+                     num_experts=48, expert_dim=128)
+    model.to(device)
+    logger.info(get_parameter_number(model))
+
+    ## 优化器和训练模型
+    optimizer = optim.RMSprop(model.parameters(), lr=0.0015)
+    num_epochs = 15
+    ## 模型并行
+    model = nn.DataParallel(model)
+    model_save_file = 'best_mmoe_model_date_is_{}.bin'.format(date_)
+    ## 训练模型
+    train_model(model, train_loader, valid_loader, val_x, optimizer, epochs=num_epochs, device=device,
+                model_save_file=model_save_file)
+    ## 加载最优模型，小学习率继续预训练
+    model.module.load_state_dict(torch.load(f"{model_path}/{model_save_file}"))
+    optimizer = optim.RMSprop(model.parameters(), lr=6e-5)
+    num_epochs = 5
+    train_model(model, train_loader, valid_loader, val_x, optimizer, epochs=num_epochs, device=device,
+                model_save_file=model_save_file)
+
+    ## 取最优模型在验证集上进行验证
+    logger.info("取最优模型在验证集上进行验证...")
+    model.module.load_state_dict(torch.load(f"{model_path}/{model_save_file}"))
+    val_score, uauc_list = evaluate(model, valid_loader, val_x, device)
+    logger.info("Valid best score is {}".format(val_score))
+    logger.info(uauc_list)
+    ## 对测试集进行预测
+    # TODO submit
+    submit = pd.read_csv(f"{raw_data_path}/submit_demo.csv")
+    for y in submit.columns[2:]:
+        submit[y] = 0
+    test_preds = predict(model, test_loader, device)
+    for i in range(len(actions)):
+        submit[actions[i]] += np.round(test_preds[i], 8)
+    logger.info("time costed: {}".format(round(time.time() - start_time, 6)))
+    del train_loader, valid_loader, test_loader, model
+    gc.collect()
+    torch.cuda.empty_cache()
