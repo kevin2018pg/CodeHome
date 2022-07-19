@@ -20,7 +20,7 @@ from deepctr_torch.inputs import SparseFeat
 from model.mmoe_model import MOE
 from utils import reduce_mem_usage
 
-sys.path.append('./train')
+sys.path.append('src/train')
 import feature_preprocess_util
 
 logger = logging.getLogger(__name__)
@@ -108,12 +108,12 @@ if __name__ == '__main__':
                                                                      'author_machine_tag_tfidf_cls_21',
                                                                      'author_machine_kw_tfidf_cls_18']
 
-    RAW_DATA_PATH = '../data'
-    REFORM_DATA_PATH = '../data/reform_data'
+    RAW_DATA_PATH = 'data'
+    REFORM_DATA_PATH = 'data/reform_data'
     LBE_MODEL_PATH = '../data/reform_data/label_encoder_models/lbe_dic_all.pkl'
-    MODEL_PATH = '../data/model/'
-    TRAIN_DATA_PATH = '../data/train_data'
-    OUT_PATH = '../data/submission'
+    MODEL_PATH = 'data/model/'
+    TRAIN_DATA_PATH = 'data/train_data'
+    OUT_PATH = 'data/submission'
     # 模型文件
     MODEL_LIST = [os.path.join(MODEL_PATH, mpath) for mpath in os.listdir(MODEL_PATH) if mpath.startswith('npseed')]
     logger.info(f"Total {len(MODEL_LIST)} models.")
