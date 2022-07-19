@@ -3,6 +3,7 @@ func quickSort(left, right int, nums []int) {
     if left >= right {
         return
     }
+    // 可加入随机流程避免最坏情况（完全顺序或逆序）
     low, high := left, right
     pivot := nums[low]
     for left < right {

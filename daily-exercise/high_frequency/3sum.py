@@ -12,6 +12,7 @@ class Solution:
         # def quick_sort(nums, left, right):
         #     if left >= right:
         #         return
+        #     可加入随机流程避免最坏情况（完全顺序或逆序）
         #     low, high = left, right
         #     pivot = nums[low]
         #     while left < right:
