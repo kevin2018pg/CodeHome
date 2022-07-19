@@ -6,3 +6,4 @@
 5. reverse-nodes-in-k-group：k个一组翻转链表（新增首节点，多节点记录头尾）
 6. 3sum：三数之和（先排序，三指针，固定k，移动head，tail。对k，head，tail都去重）
 7. cookies/quick_sort：快排（两种双指针，同向+内缩）
+8. maximum-subarray：最大子数组和
