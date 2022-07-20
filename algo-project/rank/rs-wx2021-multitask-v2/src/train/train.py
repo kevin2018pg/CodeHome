@@ -238,7 +238,7 @@ class MMOE_DNN(BaseModel):
         self.expert_dim = expert_dim
         self.num_tasks = num_tasks
 
-        # expert-kernel
+        # 专家网络 expert-kernel
         self.expert_kernel = nn.Linear(self.input_dim, num_experts * expert_dim)
 
         # TODO 每个任务的单独变换
@@ -246,6 +246,7 @@ class MMOE_DNN(BaseModel):
         # 每个任务的gate-kernel
         self.gate_kernels = nn.ModuleList(
             [nn.Linear(self.input_dim, num_experts, bias=False) for i in range(num_tasks)])
+        # 每个任务的Tower
         self.cls = nn.ModuleList(
             [nn.Sequential(nn.Linear(self.expert_dim, 128), nn.ReLU(), nn.Linear(128, 1)) for i in
              range(self.num_tasks)])
