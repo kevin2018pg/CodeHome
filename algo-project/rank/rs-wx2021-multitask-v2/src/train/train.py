@@ -273,7 +273,7 @@ class MMOE_DNN(BaseModel):
             dnn_input = combined_dnn_input(sparse_embedding_list, dense_value_list)
             dnn_out = self.dnn(dnn_input)  # [bs, dnn_hidden_units[-1]]
             if self.use_fm and self.use_din:
-                aux_out = torch.cate([fm_out, din_out], dim=-1)
+                aux_out = torch.cat([fm_out, din_out], dim=-1)
                 aux_out = self.dnn_aux(aux_out)  # [bs, dnn_hidden_units[-1]]
                 dnn_out = torch.cat([dnn_out, aux_out], dim=-1)
 
