@@ -22,7 +22,7 @@ func merge(nums1 []int, m int, nums2 []int, n int)  {
     copy(nums1,newSlice)
 }
 
-
+// 倒序放入数组，倒序寻找，先找出大的放入最后，剩下的挨个接上
 func merge_reverse(nums1 []int, m int, nums2 []int, n int)  {
     for up,down,p := m-1, n-1, m+n-1;up>=0||down>=0;p--{
         var cur int
