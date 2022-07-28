@@ -10,6 +10,7 @@
 2. search-in-rotated-sorted-array：查找旋转排序数组中指定值（二分查找，始终在有序部分查找，不在再到无序再划分有序和无序再寻找）
 3. 2sum：两数之和（哈希表存储数据-索引，查找target-遍历数是否存在）
 4. 3sum：三数之和（先排序，三指针，固定k，移动head，tail。对k，head，tail都去重）
+5. merge-sorted-array：合并有序数组，类似于合并有序链表，双指针方法，倒序方法更巧妙
 ### 快排/快速选择
 1. cookies/quick_sort：快排（两种双指针，同向+内缩）
 2. kth-largest-element-in-an-array：数组TopK（快速选择法，效率比快排高）
@@ -20,3 +21,6 @@
 ### 树
 1. binary-tree-level-order-traversal：二叉树层序遍历（BFS：层层加入再取值，条件是当前层存在，取出left+right赋给层变量）
 2. binary-tree-zigzag-level-order-traversal.go：二叉树层序遍历分奇偶层遍历顺序不同（同上题一样bfs，奇数层需要从右往左即是翻转层值）
+### 栈
+1. valid-parentheses：有效括号（建立括号哈希表，遍历字符串，属于哈希表的key入栈，不属于则需要闭合，或者闭合完需要出栈）
+
