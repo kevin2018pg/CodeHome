@@ -17,7 +17,35 @@
 # ]
 # 输出：1
 
-
+# 深度优先搜索
 class Solution:
-    def numIslands(self, grid: List[List[str]]) -> int:
-        pass
+    def dfs(self, grid, r, c):
+        grid[r][c] = 0  # 岛屿标记，代表已被访问过
+        nr, nc = len(grid), len(grid[0])
+        # -1 0, 1 0, 0 -1, 0 1
+        for x, y in [(r - 1, c), (r + 1, c), (r, c - 1), (r, c + 1)]:
+            if 0 <= x < nr and 0 <= y < nc and grid[x][y] == "1":
+                self.dfs(grid, x, y)
+
+    def numIslands(self, grid):
+        nr = len(grid)
+        if nr == 0:
+            return 0
+        nc = len(grid[0])
+
+        land_num = 0
+        for r in range(nr):
+            for c in range(nc):
+                if grid[r][c] == "1":
+                    land_num += 1
+                    self.dfs(grid, r, c)
+
+        return land_num
+
+
+s = Solution()
+s.numIslands(
+    grid=[["1", "1", "1", "1", "0"],
+          ["1", "1", "0", "1", "0"],
+          ["1", "1", "0", "0", "0"],
+          ["0", "0", "0", "0", "0"]])

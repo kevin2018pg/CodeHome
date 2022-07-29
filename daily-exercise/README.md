@@ -23,4 +23,5 @@
 2. binary-tree-zigzag-level-order-traversal.go：二叉树层序遍历分奇偶层遍历顺序不同（同上题一样bfs，奇数层需要从右往左即是翻转层值）
 ### 栈
 1. valid-parentheses：有效括号（建立括号哈希表，遍历字符串，属于哈希表的key入栈，不属于则需要闭合，或者闭合完需要出栈）
-
+### DFS/BFS
+1. number-of-islands：岛屿数量（深度优先搜索，访问过的点做标记）
