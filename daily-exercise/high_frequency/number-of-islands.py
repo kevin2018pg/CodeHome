@@ -18,7 +18,7 @@
 # 输出：1
 
 # 深度优先搜索
-class Solution:
+class SolutionDeep:
     def dfs(self, grid, r, c):
         grid[r][c] = 0  # 岛屿标记，代表已被访问过
         nr, nc = len(grid), len(grid[0])
@@ -28,14 +28,14 @@ class Solution:
                 self.dfs(grid, x, y)
 
     def numIslands(self, grid):
-        nr = len(grid)
-        if nr == 0:
+        width = len(grid)
+        if width == 0:
             return 0
-        nc = len(grid[0])
+        depth = len(grid[0])
 
         land_num = 0
-        for r in range(nr):
-            for c in range(nc):
+        for r in range(width):
+            for c in range(depth):
                 if grid[r][c] == "1":
                     land_num += 1
                     self.dfs(grid, r, c)
@@ -43,7 +43,35 @@ class Solution:
         return land_num
 
 
-s = Solution()
+# 广度优先搜索
+# 使用双端队列
+import collections
+
+
+class SolutionWide:
+    def numIslands(self, grid):
+        width = len(grid)
+        if width == 0:
+            return 0
+        depth = len(grid[0])
+        land_num = 0
+
+        for w in range(width):
+            for d in range(depth):
+                if grid[w][d] == "1":
+                    land_num += 1
+                    grid[w][d] = 0
+                    neighbors = collections.deque([(w, d)])
+                    while neighbors:
+                        row, col = neighbors.popleft()
+                        for x, y in [(row - 1, col), (row + 1, col), (row, col - 1), (row, col + 1)]:
+                            if 0 <= x < width and 0 <= y < depth and grid[x][y] == "1":
+                                neighbors.append((x, y))
+                                grid[x][y] = 0
+        return land_num
+
+
+s = SolutionDeep()
 s.numIslands(
     grid=[["1", "1", "1", "1", "0"],
           ["1", "1", "0", "1", "0"],
