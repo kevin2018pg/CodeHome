@@ -20,8 +20,12 @@
 3. best-time-to-buy-and-sell-stock：买卖股票最佳时机（前后最大差值，动态规划维护最低价格，遍历计算收益并维护最后返回）
 ### 树
 1. binary-tree-level-order-traversal：二叉树层序遍历（BFS：层层加入再取值，条件是当前层存在，取出left+right赋给层变量）
-2. binary-tree-zigzag-level-order-traversal.go：二叉树层序遍历分奇偶层遍历顺序不同（同上题一样bfs，奇数层需要从右往左即是翻转层值）
+2. binary-tree-zigzag-level-order-traversal：二叉树层序遍历分奇偶层遍历顺序不同（同上题一样bfs，奇数层需要从右往左即是翻转层值）
+3. lowest-common-ancestor-of-a-binary-tree：二叉树的最近公共祖先（递归二叉树先序遍历）
 ### 栈
 1. valid-parentheses：有效括号（建立括号哈希表，遍历字符串，属于哈希表的key入栈，不属于则需要闭合，或者闭合完需要出栈）
 ### DFS/BFS
 1. number-of-islands：岛屿数量（深度优先搜索，访问过的点做标记）
+### DP
+1. longest-increasing-subsequence：最长上升子序列（动态规划：初始状态为数组长度的1-最短是1，双层遍历，满足条件更新状态值）
+
