@@ -11,6 +11,7 @@
 3. 2sum：两数之和（哈希表存储数据-索引，查找target-遍历数是否存在）
 4. 3sum：三数之和（先排序，三指针，固定k，移动head，tail。对k，head，tail都去重）
 5. merge-sorted-array：合并有序数组，类似于合并有序链表，双指针方法，倒序方法更巧妙
+6. sqrtx：平方根最近整数（二分查找，mid值平方大于x，则左缩；反之更新结果值，右缩）
 ### 快排/快速选择
 1. cookies/quick_sort：快排（两种双指针，同向+内缩）
 2. kth-largest-element-in-an-array：数组TopK（快速选择法，效率比快排高）
