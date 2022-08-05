@@ -37,4 +37,4 @@
 ## DP
 1. fibonacci-number：斐波那契数列（dp[0]=0,dp[1]=1,dp[i]=dp[i-1]+dp[i-2]，不需维护一个dp数组，维护两个数即可，对已知项直接返回，剩下遍历n-1次即可）
 2. climbing-stairs：爬楼梯（dp[1]=1,dp[2]=2,dp[i]=dp[i-1]+dp[i-2]，遍历台阶数即可）
-
+3. climbing-stairs-min-cost：爬楼梯最小花费（dp[0]=cost[0],dp[1]=cost[1],dp[i]=min(dp[i-1],dp[i-2])+cost[i],返回最后两个最小即可）
