@@ -44,3 +44,4 @@ DP四步：
 2. climbing-stairs：爬楼梯（dp[1]=1,dp[2]=2,dp[i]=dp[i-1]+dp[i-2]，遍历台阶数即可）
 3. climbing-stairs-min-cost：爬楼梯最小花费（dp[0]=cost[0],dp[1]=cost[1],dp[i]=min(dp[i-1],dp[i-2])+cost[i],返回最后两个最小即可）
 4. unique-paths：机器人不同路径（dp[0][j]=1,dp[i][0]=1,dp[i][j]=dp[i-1][j]+dp[i][j-1]）
+5. unique-paths-ii：机器人不同路径障碍物版（dp[0][j]=0,dp[i][0]=0，障碍物之前初始化为1，dp[i][j]=dp[i-1][j]+dp[i][j-1]，前提是此点无障碍物）
