@@ -32,3 +32,7 @@
 1. longest-increasing-subsequence：最长上升子序列（dp：初始状态为数组长度的1-最短是1，双层遍历，满足条件更新状态值），一维dp
 2. longest-common-subsequence：最长公共子序列（dp：初始状态是二维的0，最后一位字符相等则序列+1，不相等则分别进一位取max），二维dp
 
+
+# 专项练习
+## DP
+1. fibonacci-number：斐波那契数列（dp[0]=0,dp[1]=1,dp[i]=dp[i-1]+dp[i-2]，不需维护一个dp数组，维护两个数即可，对已知项直接返回，剩下遍历n-1次即可）
