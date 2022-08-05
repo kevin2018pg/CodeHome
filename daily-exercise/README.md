@@ -28,5 +28,7 @@
 ### DFS/BFS
 1. number-of-islands：岛屿数量（深度优先搜索，访问过的点做标记）
 ### DP
-1. longest-increasing-subsequence：最长上升子序列（动态规划：初始状态为数组长度的1-最短是1，双层遍历，满足条件更新状态值）
+单个数组或字符串用一维dp，dp[i]定义为nums[0:i]中想要求的结果；两个数组或字符串用二维dp，定义成两维的dp[i][j]，其含义是在A[0:i]与B[0:j]之间匹配得到结果。
+1. longest-increasing-subsequence：最长上升子序列（dp：初始状态为数组长度的1-最短是1，双层遍历，满足条件更新状态值），一维dp
+2. longest-common-subsequence：最长公共子序列（dp：初始状态是二维的0，最后一位字符相等则序列+1，不相等则分别进一位取max），二维dp
 
