@@ -9,7 +9,7 @@ class Solution:
         if n < 2:
             return n
         a, b = 0, 1
-        for i in range(1, n):  # n-1次遍历
+        for i in range(1, n):  # 剩余n-1次遍历
             a, b = b, a + b
         return b
 

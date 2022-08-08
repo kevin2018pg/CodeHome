@@ -11,7 +11,7 @@ class Solution:
         if n == 1:
             return n
         dp = [0] * (n + 1)
-        dp[1] = 1
+        dp[1] = 1  # 或者初始化dp长度为n，dp[0]=1, d[[1]=2, 循环从2开始
         dp[2] = 2
         for i in range(3, n + 1):
             dp[i] = dp[i - 1] + dp[i - 2]
