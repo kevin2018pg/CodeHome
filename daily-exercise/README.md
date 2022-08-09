@@ -53,5 +53,6 @@ Review：
 5. unique-paths-ii：机器人不同路径障碍物版（dp[0][j]=0,dp[i][0]=0，障碍物之前初始化为1，dp[i][j]=dp[i-1][j]+dp[i][j-1]，前提是此点无障碍物）
 6. integer-break：整数拆分最大乘积（初始化从2开始的数组(0和1拆分乘积无意义)，i从3开始，j为拆分项值从1开始，则dp[i]= max(dp[i], max(j * (i - j), j * dp[i - j])),dp[i-j]是i-j的拆分项最大乘积）
 7. longest-increasing-subsequence：最大上升子序列（初始化1的dp数组，外层循环数组，内层循环到当前下标的子数组，判断内层与外层大小，满足则dp[i] = max(dp[i], dp[j] + 1)）
-8. longest-continuous-increasing-subsequence：最大连续上升子序列（当前状态只与前一个状态有关，dp[i]=dp[i-1]+1）
+8. number-of-longest-increasing-subsequence：最大上升子序列个数-第7题升级版 
+9. longest-continuous-increasing-subsequence：最大连续上升子序列（当前状态只与前一个状态有关，dp[i]=dp[i-1]+1）
 
