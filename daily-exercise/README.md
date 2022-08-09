@@ -56,4 +56,5 @@ Review：
 8. number-of-longest-increasing-subsequence：最大上升子序列个数-第7题升级版 （初始化两个数组，一个记录最大长度一个记录个数。）
 9. longest-continuous-increasing-subsequence：最大连续上升子序列（当前状态只与前一个状态有关，dp[i]=dp[i-1]+1）
 10.maximum-length-of-repeated-subarray：最长重复子数组（类似多序列机器人路径问题，有相等条件限制，dp[i][j]=dp[i-1][j-1]+1）
+11.uncrossed-lines：不相交的线（此题等同于求最长公共子序列）
 
