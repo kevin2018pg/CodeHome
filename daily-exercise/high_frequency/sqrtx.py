@@ -2,7 +2,7 @@
 # @Time    : 2022/8/4 21:41
 # @Author  : kevin
 # @Version : python 3.7
-# @Desc    : x的平方根（不允许使用内置函数）
+# @Desc    : x的平方根整数（不允许使用内置函数）
 
 
 class Solution:

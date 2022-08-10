@@ -12,6 +12,7 @@
 4. 3sum：三数之和（先排序，三指针，固定k，移动head，tail。对k，head，tail都去重）
 5. merge-sorted-array：合并有序数组，类似于合并有序链表，双指针方法，倒序方法更巧妙
 6. sqrtx：平方根最近整数（二分查找，mid值平方大于x，则左缩；反之更新结果值，右缩）
+7. is-subsequence：判断是否是子序列（双指针滑动窗口，相等移动大小数组指针，不相等移动大数组指针）
 ### 快排/快速选择
 1. cookies/quick_sort：快排（两种双指针，同向+内缩）
 2. kth-largest-element-in-an-array：数组TopK（快速选择法，效率比快排高）
@@ -58,3 +59,9 @@ Review：
 10.maximum-length-of-repeated-subarray：最长重复子数组（类似多序列机器人路径问题，有相等条件限制，dp[i][j]=dp[i-1][j-1]+1）
 11.uncrossed-lines：不相交的线（此题等同于求最长公共子序列）
 12.max-sum-subarray：最大子序列和（dp[i]=max(dp[i-1]+nums[i],nums[i])，result=max(result,dp[i])）
+
+## array
+1. cookies/binary-search：二分查找（两个区间版本）
+2. sqrtx：平方根最近整数（二分查找，mid值平方大于x，则左缩；反之更新结果值，右缩）
+3. find-first-and-last-position-of-element-in-sorted-array：查找排序数组中元素起止位置（二分查找+前后循环再查找）
+
