@@ -61,9 +61,13 @@ Review：
 12.max-sum-subarray：最大子序列和（dp[i]=max(dp[i-1]+nums[i],nums[i])，result=max(result,dp[i])）
 
 ## array
+数组：
+- 顺序数组寻找元素或者近似值优先二分查找
+- 单数组去重移除元素，优先快慢指针，或者头尾双指针
 1. cookies/binary-search：二分查找（两个区间版本）
 2. sqrtx：平方根最近整数（二分查找，mid值平方大于x，则左缩；反之更新结果值，右缩）
-3. search-insert-position：查找插入位置
+3. search-insert-position：查找插入位置（二分查找，找近似）
 4. find-first-and-last-position-of-element-in-sorted-array：查找排序数组中元素起止位置（第3题升级版，二分查找+前后循环再查找）
 5. remove-element：移除元素（双向指针或者快慢指针，覆盖元素）
+6. remove-duplicates-from-sorted-array：去除有序数组重复元素（快慢指针，覆盖元素，与上面区别是从1开始遍历判断重复，前后不相等覆盖值移动慢指针）
 
