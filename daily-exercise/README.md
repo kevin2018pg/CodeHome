@@ -63,5 +63,6 @@ Review：
 ## array
 1. cookies/binary-search：二分查找（两个区间版本）
 2. sqrtx：平方根最近整数（二分查找，mid值平方大于x，则左缩；反之更新结果值，右缩）
-3. find-first-and-last-position-of-element-in-sorted-array：查找排序数组中元素起止位置（二分查找+前后循环再查找）
+3. search-insert-position：查找插入位置
+4. find-first-and-last-position-of-element-in-sorted-array：查找排序数组中元素起止位置（第3题升级版，二分查找+前后循环再查找）
 
