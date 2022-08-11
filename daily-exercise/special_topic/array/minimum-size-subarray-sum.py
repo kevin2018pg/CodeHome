@@ -3,7 +3,7 @@
 # @Author  : kevin
 # @Version : python 3.7
 # @Desc    : minimum-size-subarray-sum
-# 长度最小的子数组：滑动窗口
+# 长度最小的子数组：滑动窗口，快慢指针
 
 class Solution:
     def minSubArrayLen(self, target, nums):
