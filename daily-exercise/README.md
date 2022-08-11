@@ -65,4 +65,5 @@ Review：
 2. sqrtx：平方根最近整数（二分查找，mid值平方大于x，则左缩；反之更新结果值，右缩）
 3. search-insert-position：查找插入位置
 4. find-first-and-last-position-of-element-in-sorted-array：查找排序数组中元素起止位置（第3题升级版，二分查找+前后循环再查找）
+5. remove-element：移除元素（双向指针或者快慢指针，覆盖元素）
 
