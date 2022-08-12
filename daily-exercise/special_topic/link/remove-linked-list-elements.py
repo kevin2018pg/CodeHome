@@ -15,7 +15,7 @@ class Solution:
     def removeElements(self, head, val: int):
         prehead = ListNode(next=head)  # 虚拟头节点，返回值需要虚拟头节点的next节点
         cur = prehead  # 移动节点
-        while cur.next != None:
+        while cur.next != None:  # *可以用cur.next，因为不是每一步都更新cur.next，满足条件1时会重新判断
             if cur.next.val == val:  # 下个节点值是否满足
                 cur.next = cur.next.next  # 删除节点再判断
             else:
