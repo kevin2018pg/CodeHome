@@ -81,6 +81,8 @@ Review：
 - 顺序数组寻找元素或者近似值优先二分查找
 - 单数组去重移除元素，优先快慢指针，或者头尾双指针
 1. remove-linked-list-elements：删除链表指定值元素（迭代法，创建虚拟头，判断next值是否为指定值，删除cur.next = cur.next.next）
+2. reverse-linked-list：翻转链表（前后双指针：先存后转再移动）
+
 
 
 
