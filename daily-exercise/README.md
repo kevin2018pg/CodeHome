@@ -83,7 +83,8 @@ Review：
 1. remove-linked-list-elements：删除链表指定值元素（迭代法，创建虚拟头，判断next值是否为指定值，删除cur.next = cur.next.next）
 2. reverse-linked-list：翻转链表（前后双指针：先存后转再移动）
 3. swap-nodes-in-pairs：两两交换链表节点（翻转两个局部链表节点需要用到三个节点-前中后，因为需要更新前后的指向，所以创建一个虚拟头，更新虚拟头）
-4. remove-nth-node-from-end-of-list：删除链表倒数第n个节点（）
+4. remove-nth-node-from-end-of-list：删除链表倒数第n个节点（2方法：1、先求链表长度得到正数位置，再遍历删除；2、双指针，之间间隔为n，快针走到末尾，慢针下一个位置就是要删除元素）
+5. intersection-of-two-linked-lists：相交链表（尾部相交，2方法：1哈希表，等同于判断链表是否有环，即节点是否已存在；2双指针，先确定长的链表，进行尾部对齐，开始遍历求相等节点）
 
 
 
