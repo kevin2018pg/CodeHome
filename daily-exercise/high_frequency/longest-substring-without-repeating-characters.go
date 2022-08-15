@@ -5,11 +5,11 @@ func lengthOfLongestSubstring(s string) int {
     for i:= 0;i<len(s);i++ {
         if i!= 0 {
             delete(sSet,s[left])
-            left += 1
+            left++
         }
         for right < len(s) && sSet[s[right]] == 0 {
             sSet[s[right]] ++
-            right += 1
+            right++
         }
         length = max(length, right-left)
     }

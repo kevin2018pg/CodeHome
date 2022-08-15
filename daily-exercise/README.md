@@ -6,7 +6,7 @@
 4. reverse-nodes-in-k-group：k个一组翻转链表（新增首节点，多节点记录头尾）
 5. lru-cache：LRU缓存（哈希表+双向链表，哈希表存链表节点）
 ### 滑动窗口/二分
-1. longest-substring-without-repeating-characters：无重复最长子串（滑动窗口）
+1. longest-substring-without-repeating-characters：无重复最长子串（哈希表判断，滑动窗口）
 2. search-in-rotated-sorted-array：查找旋转排序数组中指定值（二分查找，始终在有序部分查找，不在再到无序再划分有序和无序再寻找）
 3. 2sum：两数之和（哈希表存储数据-索引，查找target-遍历数是否存在）
 4. 3sum：三数之和（先排序，三指针，固定k，移动head，tail。对k，head，tail都去重）
