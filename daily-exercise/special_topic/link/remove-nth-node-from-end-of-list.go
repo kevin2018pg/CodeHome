@@ -42,8 +42,8 @@ func removeNthFromEnd2(head *ListNode, n int) *ListNode{
         count++
         if count >= n {
             slow = slow.Next
-            slow.Next = slow.Next.Next
         }
     }
+    slow.Next = slow.Next.Next
     return preHead.Next
 }
