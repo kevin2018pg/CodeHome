@@ -79,3 +79,6 @@ def quicksort(nums, left, right):
         index = partition(nums, left, right)
         quicksort(nums, left, index - 1)
         quicksort(nums, index + 1, right)
+
+# 快排一定要写退出条件，即if left >= right:return
+# 倒排更改符号即可

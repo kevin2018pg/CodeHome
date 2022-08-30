@@ -16,6 +16,7 @@ func Partition(array []int, low int,high int) int {
     return left
 }
 
+// 进行n次划分
 func TopKSplit(array []int,low int,high int,k int) {
     pivot := Partition(array,low,high)
     if pivot > k-1 {    // 在支点左侧
