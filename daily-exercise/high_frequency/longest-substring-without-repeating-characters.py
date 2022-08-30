@@ -20,3 +20,18 @@ class Solution:
             length = max(length, right - left)
 
         return length
+
+
+# 滑动窗口
+def lengthOfLongestSubstring(s):
+    str_map = set()
+    right = -1
+    length = 0
+    for left in range(len(s)):
+        if left != 0:
+            str_map.remove(s[left - 1])
+        while right < len(s) and s[right] not in str_map:
+            str_map.add(s[right])
+            right += 1
+        length = max(length, right - left + 1)
+    return length
