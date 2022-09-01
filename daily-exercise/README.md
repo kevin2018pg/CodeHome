@@ -91,6 +91,6 @@ Review：
 9. linked-list-cycle-ii：环形链表2（和i方法一样，哈希表）
 10.reorder-list：重排链表（线性表存储，头尾访问更改指向）
 
-
-
-
+## string
+字符串：
+1. reverse-string：反转字符串（1.头尾指针法 2.中间索引法len(s)/2-1,第一种比第二种空间占用低）
