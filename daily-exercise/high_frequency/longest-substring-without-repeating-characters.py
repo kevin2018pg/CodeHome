@@ -25,7 +25,7 @@ class Solution:
 # 滑动窗口
 def lengthOfLongestSubstring(s):
     str_map = set()
-    right = -1
+    right = 0
     length = 0
     for left in range(len(s)):
         if left != 0:
@@ -33,5 +33,5 @@ def lengthOfLongestSubstring(s):
         while right < len(s) and s[right] not in str_map:
             str_map.add(s[right])
             right += 1
-        length = max(length, right - left + 1)
+        length = max(length, right - left)
     return length
