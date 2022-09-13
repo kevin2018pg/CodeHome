@@ -19,6 +19,7 @@ def removeElement(nums, val):
         if nums[f] != val:
             nums[slow] = nums[f]
             slow += 1
+    return slow
 
 
 test = Solution()
