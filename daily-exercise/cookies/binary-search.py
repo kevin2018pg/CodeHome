@@ -17,7 +17,7 @@ class Solution_allbi:
             elif nums[middle] < target:
                 left = middle + 1
             else:
-                return nums[middle]
+                return middle
         return -1
 
 
