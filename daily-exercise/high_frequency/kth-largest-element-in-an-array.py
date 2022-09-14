@@ -101,3 +101,34 @@ test = [3, 2, 1, 5, 6, 4]
 cls = Solution1()
 num = cls.findKthLargest(test, 3)
 print(num)
+
+
+# 完整清晰版：第k大的数不需要转换索引，只需在partition时按从大到小划分即可
+def partition(nums, left, right):
+    pivot = nums[left]
+    i, j = left, right
+    while i < j:
+        while i < j and nums[j] < pivot:
+            j -= 1
+        nums[i] = nums[j]
+        while i < j and nums[i] >= pivot:
+            i += 1
+        nums[j] = nums[i]
+    nums[i] = pivot
+    return i
+
+
+def topK_split(nums, left, right, k):  # 进行数组划分，满足条件返回
+    index = partition(nums, left, right)
+    if index == k - 1:
+        return
+    elif index < k - 1:
+        topK_split(nums, index + 1, right, k)
+    else:
+        topK_split(nums, left, index - 1, k)
+
+
+def find_topK(nums, k):  # 划分好返回索引处的数
+    left, right = 0, len(nums) - 1
+    topK_split(nums, left, right, k)
+    return nums[k - 1]
