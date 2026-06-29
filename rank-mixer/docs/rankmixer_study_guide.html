@@ -1,0 +1,576 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RankMixer 深度复习手册</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #18202a;
+      --muted: #5c6673;
+      --line: #d9e0e8;
+      --soft: #f5f7fa;
+      --panel: #ffffff;
+      --blue: #1f6feb;
+      --green: #238636;
+      --red: #c2410c;
+      --yellow: #b7791f;
+      --violet: #7048e8;
+      --cyan: #087f8c;
+      --shadow: 0 10px 30px rgba(24, 32, 42, 0.08);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+      color: var(--ink);
+      background: #eef2f6;
+      line-height: 1.62;
+    }
+    a { color: var(--blue); }
+    .page {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 32px 20px 80px;
+    }
+    header {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 34px;
+      box-shadow: var(--shadow);
+    }
+    h1 {
+      margin: 0 0 10px;
+      font-size: 34px;
+      letter-spacing: 0;
+    }
+    h2 {
+      margin: 36px 0 14px;
+      font-size: 24px;
+      border-left: 5px solid var(--blue);
+      padding-left: 12px;
+    }
+    h3 {
+      margin: 22px 0 10px;
+      font-size: 18px;
+    }
+    p { margin: 8px 0; }
+    code {
+      background: #edf2f7;
+      border: 1px solid #dce3eb;
+      padding: 1px 5px;
+      border-radius: 5px;
+      font-family: Consolas, "SFMono-Regular", monospace;
+      font-size: 0.92em;
+    }
+    .subtitle {
+      color: var(--muted);
+      max-width: 860px;
+      font-size: 16px;
+    }
+    .grid {
+      display: grid;
+      gap: 16px;
+    }
+    .grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 18px;
+      box-shadow: 0 4px 18px rgba(24, 32, 42, 0.05);
+    }
+    .card h3 { margin-top: 0; }
+    .tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #e7f0ff;
+      color: #174ea6;
+      font-size: 12px;
+      margin-right: 6px;
+      white-space: nowrap;
+    }
+    .tag.green { background: #e7f7ed; color: #166534; }
+    .tag.red { background: #fff1e8; color: #9a3412; }
+    .tag.violet { background: #f0ebff; color: #5f3dc4; }
+    .note {
+      border-left: 4px solid var(--yellow);
+      background: #fff8e7;
+      padding: 12px 14px;
+      border-radius: 8px;
+      color: #5c4300;
+    }
+    .diagram {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 18px;
+      overflow-x: auto;
+      box-shadow: var(--shadow);
+    }
+    svg {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+    }
+    .box { fill: #ffffff; stroke: #8aa0b8; stroke-width: 1.4; rx: 8; }
+    .box-blue { fill: #e8f1ff; stroke: #1f6feb; }
+    .box-green { fill: #e7f7ed; stroke: #238636; }
+    .box-red { fill: #fff1e8; stroke: #c2410c; }
+    .box-violet { fill: #f0ebff; stroke: #7048e8; }
+    .box-cyan { fill: #e6fbfd; stroke: #087f8c; }
+    .arrow { stroke: #516173; stroke-width: 1.7; fill: none; marker-end: url(#arrow); }
+    .label { font-size: 14px; fill: #18202a; font-weight: 600; }
+    .small { font-size: 12px; fill: #5c6673; }
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .table th, .table td {
+      border-bottom: 1px solid var(--line);
+      padding: 10px 12px;
+      text-align: left;
+      vertical-align: top;
+    }
+    .table th {
+      background: #f2f5f9;
+      font-weight: 700;
+    }
+    .qa {
+      border-left: 4px solid var(--blue);
+      padding-left: 12px;
+      margin: 14px 0;
+    }
+    .qa b { display: block; margin-bottom: 4px; }
+    .checklist li { margin: 6px 0; }
+    .toc {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+    .toc a {
+      background: #f0f4f8;
+      border: 1px solid var(--line);
+      color: var(--ink);
+      text-decoration: none;
+      padding: 7px 10px;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    @media (max-width: 820px) {
+      .grid.two, .grid.three { grid-template-columns: 1fr; }
+      header { padding: 22px; }
+      h1 { font-size: 28px; }
+    }
+    @media print {
+      body { background: white; }
+      .page { max-width: none; padding: 0; }
+      .card, header, .diagram { box-shadow: none; break-inside: avoid; }
+      .toc { display: none; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <h1>RankMixer 深度复习手册</h1>
+    <p class="subtitle">
+      面向已经熟悉 MMoE / PLE 的同学：用多任务视角理解 RankMixer，再扩展到工业排序、离线训练、线上推理和面试问答。
+      对应论文：<b>RankMixer: Scaling Up Ranking Models in Industrial Recommenders</b>。
+    </p>
+    <div class="toc">
+      <a href="#position">模型定位</a>
+      <a href="#architecture">架构图</a>
+      <a href="#compare">与 MMoE/PLE 对比</a>
+      <a href="#train">离线训练</a>
+      <a href="#serve">线上推理</a>
+      <a href="#interview">面试题</a>
+      <a href="#review">复习路径</a>
+    </div>
+  </header>
+
+  <section id="position">
+    <h2>1. 先建立定位</h2>
+    <div class="grid three">
+      <div class="card">
+        <h3>MMoE / PLE 主要解决什么</h3>
+        <p><span class="tag green">Task-centric</span></p>
+        <p>核心问题是多个任务之间怎么共享、怎么隔离、怎么减少负迁移。</p>
+        <p>典型表达：<code>shared experts + task gates + task towers</code>。</p>
+      </div>
+      <div class="card">
+        <h3>RankMixer 主要解决什么</h3>
+        <p><span class="tag">Feature-token-centric</span></p>
+        <p>核心问题是多域稀疏特征怎么高效交互，排序模型怎么扩容，同时线上延迟可控。</p>
+        <p>典型表达：<code>tokens + token mixing + per-token FFN</code>。</p>
+      </div>
+      <div class="card">
+        <h3>一句话记忆</h3>
+        <p><span class="tag violet">Backbone</span></p>
+        <p>RankMixer 更像工业排序 backbone，不是 MMoE/PLE 的简单替代品。</p>
+        <p>它可以接 CTR/CVR 多任务 head，也可以和 MMoE/PLE 结合。</p>
+      </div>
+    </div>
+    <p class="note">面试表达：MMoE/PLE 关注任务共享，RankMixer 关注特征交互、模型扩容和硬件效率。两者不是同一个层面的设计。</p>
+  </section>
+
+  <section id="architecture">
+    <h2>2. RankMixer 总体架构图</h2>
+    <div class="diagram">
+      <svg viewBox="0 0 1060 560" role="img" aria-label="RankMixer architecture">
+        <defs>
+          <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="#516173"></path>
+          </marker>
+        </defs>
+
+        <rect class="box-blue" x="35" y="40" width="170" height="60"></rect>
+        <text class="label" x="120" y="66" text-anchor="middle">User Features</text>
+        <text class="small" x="120" y="86" text-anchor="middle">unionid, profile, stats</text>
+
+        <rect class="box-blue" x="35" y="130" width="170" height="60"></rect>
+        <text class="label" x="120" y="156" text-anchor="middle">Item Features</text>
+        <text class="small" x="120" y="176" text-anchor="middle">item_id, author, price</text>
+
+        <rect class="box-blue" x="35" y="220" width="170" height="60"></rect>
+        <text class="label" x="120" y="246" text-anchor="middle">Context Features</text>
+        <text class="small" x="120" y="266" text-anchor="middle">source, position, time</text>
+
+        <rect class="box-blue" x="35" y="310" width="170" height="60"></rect>
+        <text class="label" x="120" y="336" text-anchor="middle">Sequence Stats</text>
+        <text class="small" x="120" y="356" text-anchor="middle">click, watch, skip</text>
+
+        <rect class="box-blue" x="35" y="400" width="170" height="60"></rect>
+        <text class="label" x="120" y="426" text-anchor="middle">Cross Features</text>
+        <text class="small" x="120" y="446" text-anchor="middle">affinity, similarity</text>
+
+        <rect class="box-green" x="280" y="80" width="180" height="340"></rect>
+        <text class="label" x="370" y="112" text-anchor="middle">Tokenization</text>
+        <text class="small" x="370" y="142" text-anchor="middle">categorical: hash + emb</text>
+        <text class="small" x="370" y="166" text-anchor="middle">numeric: projection</text>
+        <text class="small" x="370" y="205" text-anchor="middle">user token</text>
+        <text class="small" x="370" y="235" text-anchor="middle">item token</text>
+        <text class="small" x="370" y="265" text-anchor="middle">context token</text>
+        <text class="small" x="370" y="295" text-anchor="middle">sequence token</text>
+        <text class="small" x="370" y="325" text-anchor="middle">cross token</text>
+
+        <rect class="box-violet" x="540" y="88" width="190" height="90"></rect>
+        <text class="label" x="635" y="124" text-anchor="middle">Multi-Head Token Mixing</text>
+        <text class="small" x="635" y="150" text-anchor="middle">replace self-attention</text>
+
+        <rect class="box-cyan" x="540" y="235" width="190" height="90"></rect>
+        <text class="label" x="635" y="272" text-anchor="middle">Per-token FFN</text>
+        <text class="small" x="635" y="298" text-anchor="middle">domain-specific transform</text>
+
+        <rect class="box-violet" x="785" y="140" width="150" height="70"></rect>
+        <text class="label" x="860" y="170" text-anchor="middle">Stack Blocks</text>
+        <text class="small" x="860" y="190" text-anchor="middle">repeat N layers</text>
+
+        <rect class="box-green" x="785" y="270" width="150" height="70"></rect>
+        <text class="label" x="860" y="300" text-anchor="middle">Pooling</text>
+        <text class="small" x="860" y="320" text-anchor="middle">mean / weighted</text>
+
+        <rect class="box-red" x="785" y="390" width="150" height="55"></rect>
+        <text class="label" x="860" y="424" text-anchor="middle">CTR Head</text>
+
+        <rect class="box-red" x="785" y="465" width="150" height="55"></rect>
+        <text class="label" x="860" y="499" text-anchor="middle">CVR Head</text>
+
+        <path class="arrow" d="M205 70 C235 70 245 130 280 130"></path>
+        <path class="arrow" d="M205 160 C235 160 245 185 280 185"></path>
+        <path class="arrow" d="M205 250 C235 250 245 245 280 245"></path>
+        <path class="arrow" d="M205 340 C235 340 245 305 280 305"></path>
+        <path class="arrow" d="M205 430 C235 430 245 355 280 355"></path>
+        <path class="arrow" d="M460 250 C500 250 505 130 540 130"></path>
+        <path class="arrow" d="M635 178 L635 235"></path>
+        <path class="arrow" d="M730 132 C765 132 755 175 785 175"></path>
+        <path class="arrow" d="M730 280 C765 280 755 305 785 305"></path>
+        <path class="arrow" d="M860 340 L860 390"></path>
+        <path class="arrow" d="M860 340 C945 350 945 492 935 492"></path>
+
+        <text class="small" x="650" y="365" text-anchor="middle">Sparse-MoE 可替换 Per-token FFN</text>
+      </svg>
+    </div>
+  </section>
+
+  <section>
+    <h2>3. Block 内部结构</h2>
+    <div class="diagram">
+      <svg viewBox="0 0 960 260" role="img" aria-label="RankMixer block">
+        <defs>
+          <marker id="arrow2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="#516173"></path>
+          </marker>
+        </defs>
+        <rect class="box-blue" x="40" y="90" width="125" height="60"></rect>
+        <text class="label" x="102" y="124" text-anchor="middle">Token Matrix</text>
+
+        <rect class="box-violet" x="230" y="70" width="165" height="95"></rect>
+        <text class="label" x="312" y="110" text-anchor="middle">Token Mixing</text>
+        <text class="small" x="312" y="133" text-anchor="middle">reshape + permute</text>
+
+        <rect class="box" x="455" y="70" width="120" height="95"></rect>
+        <text class="label" x="515" y="110" text-anchor="middle">Add + Norm</text>
+
+        <rect class="box-cyan" x="635" y="70" width="160" height="95"></rect>
+        <text class="label" x="715" y="110" text-anchor="middle">Per-token FFN</text>
+        <text class="small" x="715" y="133" text-anchor="middle">or Sparse-MoE</text>
+
+        <rect class="box" x="845" y="70" width="90" height="95"></rect>
+        <text class="label" x="890" y="110" text-anchor="middle">Add</text>
+        <text class="label" x="890" y="132" text-anchor="middle">Norm</text>
+
+        <path class="arrow" marker-end="url(#arrow2)" d="M165 120 L230 120"></path>
+        <path class="arrow" marker-end="url(#arrow2)" d="M395 120 L455 120"></path>
+        <path class="arrow" marker-end="url(#arrow2)" d="M575 120 L635 120"></path>
+        <path class="arrow" marker-end="url(#arrow2)" d="M795 120 L845 120"></path>
+        <path class="arrow" marker-end="url(#arrow2)" d="M165 96 C315 20 410 25 500 70"></path>
+        <path class="arrow" marker-end="url(#arrow2)" d="M575 96 C690 20 810 25 875 70"></path>
+      </svg>
+    </div>
+    <div class="grid two">
+      <div class="card">
+        <h3>Token Mixing 的直觉</h3>
+        <p>它让不同语义 token 的不同 channel 发生交互，但不计算 attention map。</p>
+        <p>你可以把它理解成“硬件友好的跨域通道重排”。</p>
+      </div>
+      <div class="card">
+        <h3>Per-token FFN 的直觉</h3>
+        <p>user/item/context/sequence/cross 的分布不同，所以每个 token 用自己的 FFN 更合理。</p>
+        <p>这保留了特征域差异，同时仍然能统一堆叠模型。</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="compare">
+    <h2>4. RankMixer vs MMoE / PLE</h2>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>维度</th>
+          <th>MMoE</th>
+          <th>PLE</th>
+          <th>RankMixer</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>核心对象</td>
+          <td>任务</td>
+          <td>任务 + 共享/私有专家</td>
+          <td>特征 token</td>
+        </tr>
+        <tr>
+          <td>主要解决</td>
+          <td>多任务共享和冲突</td>
+          <td>减少负迁移，增强任务分离</td>
+          <td>多域特征交互、模型扩容、推理效率</td>
+        </tr>
+        <tr>
+          <td>典型结构</td>
+          <td>experts + task gates</td>
+          <td>shared experts + task experts</td>
+          <td>token mixing + per-token FFN</td>
+        </tr>
+        <tr>
+          <td>是否能多任务</td>
+          <td>天然支持</td>
+          <td>天然支持</td>
+          <td>通过多个 task head 支持</td>
+        </tr>
+        <tr>
+          <td>面试重点</td>
+          <td>gate 如何缓解任务冲突</td>
+          <td>shared/private expert 怎么设计</td>
+          <td>为什么替代 attention，为什么适合工业扩容</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="train">
+    <h2>5. 离线训练链路</h2>
+    <div class="diagram">
+      <svg viewBox="0 0 1060 250" role="img" aria-label="Offline training pipeline">
+        <defs>
+          <marker id="arrow3" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="#516173"></path>
+          </marker>
+        </defs>
+        <rect class="box-blue" x="35" y="80" width="130" height="70"></rect>
+        <text class="label" x="100" y="110" text-anchor="middle">曝光日志</text>
+        <text class="small" x="100" y="132" text-anchor="middle">request/item</text>
+
+        <rect class="box-blue" x="215" y="80" width="130" height="70"></rect>
+        <text class="label" x="280" y="110" text-anchor="middle">标签构造</text>
+        <text class="small" x="280" y="132" text-anchor="middle">CTR/CVR</text>
+
+        <rect class="box-green" x="395" y="80" width="145" height="70"></rect>
+        <text class="label" x="467" y="110" text-anchor="middle">特征 Join</text>
+        <text class="small" x="467" y="132" text-anchor="middle">user/item/context</text>
+
+        <rect class="box-violet" x="590" y="80" width="145" height="70"></rect>
+        <text class="label" x="662" y="110" text-anchor="middle">RankMixer</text>
+        <text class="small" x="662" y="132" text-anchor="middle">multi-task train</text>
+
+        <rect class="box-cyan" x="785" y="80" width="110" height="70"></rect>
+        <text class="label" x="840" y="110" text-anchor="middle">评估</text>
+        <text class="small" x="840" y="132" text-anchor="middle">AUC/NDCG</text>
+
+        <rect class="box-red" x="945" y="80" width="90" height="70"></rect>
+        <text class="label" x="990" y="110" text-anchor="middle">导出</text>
+        <text class="small" x="990" y="132" text-anchor="middle">serving</text>
+
+        <path class="arrow" marker-end="url(#arrow3)" d="M165 115 L215 115"></path>
+        <path class="arrow" marker-end="url(#arrow3)" d="M345 115 L395 115"></path>
+        <path class="arrow" marker-end="url(#arrow3)" d="M540 115 L590 115"></path>
+        <path class="arrow" marker-end="url(#arrow3)" d="M735 115 L785 115"></path>
+        <path class="arrow" marker-end="url(#arrow3)" d="M895 115 L945 115"></path>
+      </svg>
+    </div>
+    <div class="grid two">
+      <div class="card">
+        <h3>训练侧必须关心</h3>
+        <ul class="checklist">
+          <li>按 <code>request_id</code> 保留候选列表，用 NDCG/GAUC 评估。</li>
+          <li>CTR/CVR 标签窗口要固定，CVR 要考虑延迟回传。</li>
+          <li>训练和推理使用同一份特征配置、hash、缺失值和归一化。</li>
+          <li>CVR 稀疏时要考虑 loss 权重、负采样、样本校准。</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>当前仓库对应</h3>
+        <p><code>feature_config.json</code> 定义 token 和处理方式。</p>
+        <p><code>train.py</code> 训练 CTR/CVR 双任务。</p>
+        <p><code>infer.py</code> 输出 <code>ctr_pred</code>、<code>cvr_pred</code>、<code>rank_mixer_score</code>。</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="serve">
+    <h2>6. 线上推理链路</h2>
+    <div class="diagram">
+      <svg viewBox="0 0 1060 300" role="img" aria-label="Online serving pipeline">
+        <defs>
+          <marker id="arrow4" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="#516173"></path>
+          </marker>
+        </defs>
+        <rect class="box-blue" x="35" y="105" width="115" height="70"></rect>
+        <text class="label" x="92" y="136" text-anchor="middle">召回</text>
+        <text class="small" x="92" y="158" text-anchor="middle">thousands</text>
+
+        <rect class="box-green" x="200" y="105" width="115" height="70"></rect>
+        <text class="label" x="257" y="136" text-anchor="middle">粗排</text>
+        <text class="small" x="257" y="158" text-anchor="middle">hundreds</text>
+
+        <rect class="box-violet" x="365" y="105" width="150" height="70"></rect>
+        <text class="label" x="440" y="136" text-anchor="middle">特征服务</text>
+        <text class="small" x="440" y="158" text-anchor="middle">online features</text>
+
+        <rect class="box-cyan" x="565" y="105" width="150" height="70"></rect>
+        <text class="label" x="640" y="136" text-anchor="middle">RankMixer</text>
+        <text class="small" x="640" y="158" text-anchor="middle">batch inference</text>
+
+        <rect class="box-green" x="765" y="105" width="115" height="70"></rect>
+        <text class="label" x="822" y="136" text-anchor="middle">重排</text>
+        <text class="small" x="822" y="158" text-anchor="middle">rules/diversity</text>
+
+        <rect class="box-red" x="930" y="105" width="95" height="70"></rect>
+        <text class="label" x="977" y="136" text-anchor="middle">展示</text>
+        <text class="small" x="977" y="158" text-anchor="middle">logging</text>
+
+        <path class="arrow" marker-end="url(#arrow4)" d="M150 140 L200 140"></path>
+        <path class="arrow" marker-end="url(#arrow4)" d="M315 140 L365 140"></path>
+        <path class="arrow" marker-end="url(#arrow4)" d="M515 140 L565 140"></path>
+        <path class="arrow" marker-end="url(#arrow4)" d="M715 140 L765 140"></path>
+        <path class="arrow" marker-end="url(#arrow4)" d="M880 140 L930 140"></path>
+
+        <text class="small" x="640" y="225" text-anchor="middle">重点：P99 延迟、特征缺失、训推一致、batch 大小、Sparse-MoE 路由稳定性</text>
+      </svg>
+    </div>
+    <div class="grid three">
+      <div class="card">
+        <h3>延迟</h3>
+        <p>关注 P50/P90/P99，而不是只看平均耗时。候选数、token 数、embedding 维度、MoE top-k 都会影响延迟。</p>
+      </div>
+      <div class="card">
+        <h3>特征</h3>
+        <p>线上必须有缺失默认值和类型校验。ID 类特征要保证 hash 和离线完全一致。</p>
+      </div>
+      <div class="card">
+        <h3>监控</h3>
+        <p>看 CTR/CVR 分布、校准、特征缺失率、expert 激活分布、GPU 利用率和线上 A/B。</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="interview">
+    <h2>7. 面试高频题卡</h2>
+    <div class="qa">
+      <b>Q1：RankMixer 解决了什么问题？</b>
+      <p>解决工业排序模型扩容时的效率问题。它用 token mixing 做多域特征交互，用 per-token FFN 保留特征域差异，并通过 Sparse-MoE 扩大容量、控制推理成本。</p>
+    </div>
+    <div class="qa">
+      <b>Q2：RankMixer 和 Transformer 有什么区别？</b>
+      <p>Transformer 用 self-attention，表达强但成本高；RankMixer 不生成 attention map，而是通过 channel/token 维度混合做交互，更硬件友好。</p>
+    </div>
+    <div class="qa">
+      <b>Q3：为什么需要 Per-token FFN？</b>
+      <p>因为 user、item、context、sequence、cross 的语义和分布不同。Per-token FFN 保留各自子空间，避免所有 token 共用同一变换导致表达被抹平。</p>
+    </div>
+    <div class="qa">
+      <b>Q4：RankMixer 和 MMoE/PLE 怎么结合？</b>
+      <p>RankMixer 可以作为 backbone 输出 shared representation，然后接 MMoE/PLE 或多个 task head。RankMixer 解决特征交互，MMoE/PLE 解决任务共享。</p>
+    </div>
+    <div class="qa">
+      <b>Q5：Sparse-MoE 的线上风险是什么？</b>
+      <p>专家负载不均、路由不稳定、跨设备通信、部分专家训练不足、fallback 难。需要监控 expert 激活率、路由熵、P99 延迟和线上指标。</p>
+    </div>
+    <div class="qa">
+      <b>Q6：item_id/user_id 是字符串还是数字？</b>
+      <p>原始可以是字符串或 int64，但模型里必须按 categorical ID 处理，通常 hash/vocab 后进 embedding，不能当连续数值。</p>
+    </div>
+    <div class="qa">
+      <b>Q7：离线 AUC 涨了线上一定涨吗？</b>
+      <p>不一定。还要看校准、NDCG、分场景指标、延迟、线上候选集、position bias、特征新鲜度和业务融合公式。</p>
+    </div>
+  </section>
+
+  <section id="review">
+    <h2>8. 一周复习路径</h2>
+    <div class="grid two">
+      <div class="card">
+        <h3>Day 1-2：会讲结构</h3>
+        <p>背熟：<code>feature grouping -> tokenization -> token mixing -> per-token FFN -> CTR/CVR heads</code>。</p>
+      </div>
+      <div class="card">
+        <h3>Day 3：会对比</h3>
+        <p>重点对比 MMoE、PLE、Transformer、DeepFM/DCN。每个说清解决的问题和代价。</p>
+      </div>
+      <div class="card">
+        <h3>Day 4-5：会落地</h3>
+        <p>掌握特征 schema、训练标签、评估指标、推理延迟、训推一致、线上监控。</p>
+      </div>
+      <div class="card">
+        <h3>Day 6-7：会面试</h3>
+        <p>拿上面的题卡练习，不只答结构，还要答为什么适合工业场景。</p>
+      </div>
+    </div>
+    <p class="note">
+      最终口径：RankMixer 是面向工业排序扩容的 backbone。它以特征 token 为中心，通过高效 token mixing 和 per-token FFN 建模多域特征交互，并用 Sparse-MoE 在参数规模和线上成本之间做平衡。
+    </p>
+  </section>
+</div>
+</body>
+</html>

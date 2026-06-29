@@ -1,0 +1,41 @@
+{
+  "train_rows": 6310,
+  "valid_rows": 2321,
+  "feature_tokens": 5,
+  "model_config": {
+    "model_dim": 320,
+    "num_layers": 2,
+    "ff_multiplier": 4,
+    "dropout": 0.1,
+    "numeric_embedding_dim": 16,
+    "use_sparse_moe": true,
+    "num_experts": 4,
+    "sparse_topk": 2,
+    "moe_l1_weight": 0.0001,
+    "dense_training_sparse_inference": true
+  },
+  "history": [
+    {
+      "epoch": 1,
+      "train_logloss": 0.7280627762647892,
+      "valid_logloss": 0.670660979195126,
+      "valid_ctr_auc": 0.5676173152094989,
+      "valid_cvr_auc": 0.5261475006622015,
+      "valid_ndcg_at_10": 0.126872856367697
+    }
+  ],
+  "final_valid_metrics": {
+    "epoch": 1,
+    "train_logloss": 0.7280627762647892,
+    "valid_logloss": 0.670660979195126,
+    "valid_ctr_auc": 0.5676173152094989,
+    "valid_cvr_auc": 0.5261475006622015,
+    "valid_ndcg_at_10": 0.126872856367697
+  },
+  "paper_alignment": {
+    "multi_head_token_mixing": true,
+    "per_token_ffn": true,
+    "sparse_moe": true,
+    "mean_pooling": true
+  }
+}

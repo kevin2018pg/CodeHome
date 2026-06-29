@@ -1,0 +1,306 @@
+{
+  "request_id_field": "request_id",
+  "item_id_field": "item_id",
+  "label_fields": {
+    "ctr": "ctr_label",
+    "cvr": "cvr_label"
+  },
+  "groups": [
+    {
+      "name": "user_profile",
+      "categorical": [
+        {
+          "name": "unionid",
+          "num_buckets": 80000,
+          "embedding_dim": 32,
+          "raw_type": "string_or_int64_id",
+          "model_type": "categorical_id",
+          "processor": "hash_bucket_embedding",
+          "description": "用户主键，作为用户身份 ID 特征"
+        },
+        {
+          "name": "membership_tier",
+          "num_buckets": 32,
+          "embedding_dim": 8,
+          "raw_type": "enum_string",
+          "model_type": "categorical_enum",
+          "processor": "hash_bucket_embedding",
+          "description": "会员等级"
+        },
+        {
+          "name": "device",
+          "num_buckets": 32,
+          "embedding_dim": 8,
+          "raw_type": "enum_string",
+          "model_type": "categorical_enum",
+          "processor": "hash_bucket_embedding",
+          "description": "设备类型，如 ios/android/desktop"
+        },
+        {
+          "name": "user_segment",
+          "num_buckets": 32,
+          "embedding_dim": 8,
+          "raw_type": "enum_string",
+          "model_type": "categorical_enum",
+          "processor": "hash_bucket_embedding",
+          "description": "用户分层标签"
+        }
+      ],
+      "numeric": [
+        {
+          "name": "user_age",
+          "raw_type": "int",
+          "model_type": "numeric",
+          "processor": "linear_projection",
+          "description": "用户年龄"
+        },
+        {
+          "name": "activity_7d",
+          "raw_type": "int",
+          "model_type": "numeric",
+          "processor": "linear_projection",
+          "description": "近 7 天活跃行为次数"
+        },
+        {
+          "name": "historical_ctr",
+          "raw_type": "float_ratio",
+          "model_type": "numeric_stat",
+          "processor": "linear_projection",
+          "description": "用户历史点击率统计"
+        },
+        {
+          "name": "historical_cvr",
+          "raw_type": "float_ratio",
+          "model_type": "numeric_stat",
+          "processor": "linear_projection",
+          "description": "用户历史转化率统计"
+        },
+        {
+          "name": "user_pay_tendency_30d",
+          "raw_type": "float_ratio",
+          "model_type": "numeric_stat",
+          "processor": "linear_projection",
+          "description": "近 30 天用户支付倾向"
+        }
+      ]
+    },
+    {
+      "name": "candidate",
+      "categorical": [
+        {
+          "name": "content_id",
+          "num_buckets": 100000,
+          "embedding_dim": 32,
+          "raw_type": "string_or_int64_id",
+          "model_type": "categorical_id",
+          "processor": "hash_bucket_embedding",
+          "description": "内容/商品主 ID，当前实现里等价于 item_id 的建模位"
+        },
+        {
+          "name": "author_id",
+          "num_buckets": 20000,
+          "embedding_dim": 24,
+          "raw_type": "string_or_int64_id",
+          "model_type": "categorical_id",
+          "processor": "hash_bucket_embedding",
+          "description": "作者或商家 ID"
+        },
+        {
+          "name": "brand_tier",
+          "num_buckets": 32,
+          "embedding_dim": 8,
+          "raw_type": "enum_string",
+          "model_type": "categorical_enum",
+          "processor": "hash_bucket_embedding",
+          "description": "品牌层级"
+        },
+        {
+          "name": "content_type",
+          "num_buckets": 32,
+          "embedding_dim": 8,
+          "raw_type": "enum_string",
+          "model_type": "categorical_enum",
+          "processor": "hash_bucket_embedding",
+          "description": "内容类型，如短视频/直播/商城/广告"
+        }
+      ],
+      "numeric": [
+        {
+          "name": "price",
+          "raw_type": "float",
+          "model_type": "numeric",
+          "processor": "linear_projection",
+          "description": "价格"
+        },
+        {
+          "name": "quality_score",
+          "raw_type": "float_score",
+          "model_type": "numeric_stat",
+          "processor": "linear_projection",
+          "description": "质量分"
+        },
+        {
+          "name": "seller_score",
+          "raw_type": "float_score",
+          "model_type": "numeric_stat",
+          "processor": "linear_projection",
+          "description": "商家质量分"
+        },
+        {
+          "name": "candidate_score",
+          "raw_type": "float_score",
+          "model_type": "upstream_model_score",
+          "processor": "linear_projection",
+          "description": "召回/粗排等上游模型分"
+        },
+        {
+          "name": "item_ctr_7d",
+          "raw_type": "float_ratio",
+          "model_type": "numeric_stat",
+          "processor": "linear_projection",
+          "description": "近 7 天 item CTR"
+        },
+        {
+          "name": "item_cvr_7d",
+          "raw_type": "float_ratio",
+          "model_type": "numeric_stat",
+          "processor": "linear_projection",
+          "description": "近 7 天 item CVR"
+        }
+      ]
+    },
+    {
+      "name": "context",
+      "categorical": [
+        {
+          "name": "traffic_source",
+          "num_buckets": 32,
+          "embedding_dim": 8,
+          "raw_type": "enum_string",
+          "model_type": "categorical_enum",
+          "processor": "hash_bucket_embedding",
+          "description": "流量来源"
+        }
+      ],
+      "numeric": [
+        {
+          "name": "position",
+          "raw_type": "int",
+          "model_type": "numeric_rank_context",
+          "processor": "linear_projection",
+          "description": "当前候选在请求中的初始位置"
+        },
+        {
+          "name": "hour_of_day",
+          "raw_type": "int",
+          "model_type": "numeric_time_context",
+          "processor": "linear_projection",
+          "description": "小时"
+        },
+        {
+          "name": "is_weekend",
+          "raw_type": "binary_int",
+          "model_type": "numeric_binary",
+          "processor": "linear_projection",
+          "description": "是否周末"
+        },
+        {
+          "name": "network_type",
+          "raw_type": "int_enum",
+          "model_type": "numeric_context_code",
+          "processor": "linear_projection",
+          "description": "网络环境编码，如 4G/5G/WiFi"
+        },
+        {
+          "name": "session_depth",
+          "raw_type": "int",
+          "model_type": "numeric_context_stat",
+          "processor": "linear_projection",
+          "description": "会话深度"
+        }
+      ]
+    },
+    {
+      "name": "sequence",
+      "categorical": [],
+      "numeric": [
+        {
+          "name": "seq_click_rate_7d",
+          "raw_type": "float_ratio",
+          "model_type": "sequence_aggregate_stat",
+          "processor": "linear_projection",
+          "description": "近 7 天序列点击率聚合"
+        },
+        {
+          "name": "seq_watch_depth_7d",
+          "raw_type": "float_ratio",
+          "model_type": "sequence_aggregate_stat",
+          "processor": "linear_projection",
+          "description": "近 7 天序列观看深度"
+        },
+        {
+          "name": "seq_skip_rate_7d",
+          "raw_type": "float_ratio",
+          "model_type": "sequence_aggregate_stat",
+          "processor": "linear_projection",
+          "description": "近 7 天序列跳过率"
+        },
+        {
+          "name": "seq_ecom_exposure_7d",
+          "raw_type": "float_count",
+          "model_type": "sequence_aggregate_stat",
+          "processor": "linear_projection",
+          "description": "近 7 天电商曝光量"
+        },
+        {
+          "name": "seq_live_watch_rate_7d",
+          "raw_type": "float_ratio",
+          "model_type": "sequence_aggregate_stat",
+          "processor": "linear_projection",
+          "description": "近 7 天直播观看率"
+        }
+      ]
+    },
+    {
+      "name": "cross",
+      "categorical": [],
+      "numeric": [
+        {
+          "name": "cross_ctr_gap",
+          "raw_type": "float",
+          "model_type": "cross_stat",
+          "processor": "linear_projection",
+          "description": "用户预期 CTR 与候选 CTR 的差值"
+        },
+        {
+          "name": "cross_price_gap",
+          "raw_type": "float",
+          "model_type": "cross_stat",
+          "processor": "linear_projection",
+          "description": "用户价格偏好与候选价格的差异"
+        },
+        {
+          "name": "cross_user_author_affinity",
+          "raw_type": "float_score",
+          "model_type": "cross_affinity",
+          "processor": "linear_projection",
+          "description": "用户和作者/商家的亲和度"
+        },
+        {
+          "name": "cross_user_item_similarity",
+          "raw_type": "float_score",
+          "model_type": "cross_affinity",
+          "processor": "linear_projection",
+          "description": "用户与候选 item 相似度"
+        },
+        {
+          "name": "cross_query_item_intent",
+          "raw_type": "float_score",
+          "model_type": "cross_intent",
+          "processor": "linear_projection",
+          "description": "请求意图与候选匹配度"
+        }
+      ]
+    }
+  ]
+}

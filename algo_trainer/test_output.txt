@@ -1,0 +1,61 @@
+=======================================================
+algo_trainer 本地单元测试（无需启动服务）
+=======================================================
+
+[1] _do_train 基本训练（分类）
+  [PASS] 返回 model_id
+  [PASS] feature_names 正确
+  [PASS] metrics 包含 auc
+  [PASS] auc 在合理范围  (0.9855)
+  [PASS] auto_tune 为 None
+  [PASS] 模型文件已保存
+  [PASS] 元信息文件已保存
+
+[2] _do_train 回归任务
+  [PASS] 返回 model_id
+  [PASS] metrics 包含 rmse
+  [PASS] rmse > 0
+
+[3] _do_predict 基本预测（output_prob=True）
+  [PASS] 结果行数正确  (got 50)
+  [PASS] 包含 id 列
+  [PASS] 包含 pred_prob 列
+  [PASS] 包含 pred_label 列
+  [PASS] id 第一行正确
+  [PASS] pred_prob 在 [0,1]
+  [PASS] pred_label 只有 0/1
+
+[4] _do_predict（output_prob=False）
+  [PASS] 包含 prediction 列
+  [PASS] 不含 pred_prob 列
+
+[5] 特征列顺序打乱后自动对齐
+  [PASS] 预测成功（列顺序不影响结果）
+
+[6] 错误：缺少 id 列
+  [PASS] 抛出 HTTPException 400  (400: 找不到ID列 'id'，文件中的列为: ['f0', 'f1', 'f2', 'f3', 'f4', 'label'])
+
+[7] 错误：缺少 label 列
+  [PASS] 抛出 HTTPException 400  (400: 找不到标签列 'label'，文件中的列为: ['id', 'f0', 'f1', 'f2', 'f3', 'f4'])
+
+[8] 错误：预测不存在的模型
+  [PASS] 抛出 HTTPException 404  (404: 模型 'not_exist_model' 不存在，请先训练)
+
+[9] 错误：预测数据缺少特征列
+  [PASS] 抛出 HTTPException 400  (400: 预测数据缺少特征列: ['f0']，该模型训练时的特征为: ['f0', 'f1', 'f2', 'f3', 'f4'])
+
+[10] 错误：非法 task 参数
+  [PASS] 抛出 HTTPException 400  (400: task 只支持 classification 或 regression)
+
+[11] 模型持久化：保存后重新加载
+  [PASS] 加载模型成功
+  [PASS] meta 包含 feature_names
+  [PASS] meta feature_names 正确
+
+[12] 预测数据有多余列，自动忽略
+  [PASS] 预测成功
+  [PASS] 多余列不出现在结果中
+
+=======================================================
+所有测试通过 [ALL PASS]
+=======================================================

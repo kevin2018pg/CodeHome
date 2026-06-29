@@ -1,0 +1,586 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RankMixer 算法工程师深度手册</title>
+  <style>
+    :root {
+      --ink: #17202a;
+      --muted: #536171;
+      --bg: #eef2f6;
+      --paper: #ffffff;
+      --line: #d8e0e8;
+      --blue: #1d4ed8;
+      --green: #166534;
+      --orange: #c2410c;
+      --purple: #6d28d9;
+      --cyan: #0f766e;
+      --red: #b91c1c;
+      --soft-blue: #eaf2ff;
+      --soft-green: #e9f7ef;
+      --soft-orange: #fff1e6;
+      --soft-purple: #f1ebff;
+      --soft-cyan: #e7fbf8;
+      --shadow: 0 8px 28px rgba(23, 32, 42, 0.08);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.64;
+    }
+    .page { max-width: 1220px; margin: 0 auto; padding: 28px 20px 90px; }
+    header, section {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      margin-bottom: 18px;
+      padding: 28px;
+    }
+    h1 { margin: 0 0 10px; font-size: 34px; letter-spacing: 0; }
+    h2 { margin: 0 0 18px; font-size: 24px; border-left: 5px solid var(--blue); padding-left: 12px; }
+    h3 { margin: 20px 0 10px; font-size: 18px; }
+    p { margin: 8px 0; }
+    code, .mono {
+      font-family: Consolas, "SFMono-Regular", monospace;
+      background: #f1f5f9;
+      border: 1px solid #dbe4ee;
+      border-radius: 5px;
+      padding: 1px 5px;
+    }
+    pre {
+      background: #0f172a;
+      color: #e2e8f0;
+      border-radius: 10px;
+      padding: 14px 16px;
+      overflow-x: auto;
+      font-family: Consolas, "SFMono-Regular", monospace;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+    a { color: var(--blue); }
+    .lead { max-width: 930px; color: var(--muted); font-size: 16px; }
+    .toc { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+    .toc a {
+      text-decoration: none;
+      color: var(--ink);
+      border: 1px solid var(--line);
+      background: #f6f8fb;
+      border-radius: 8px;
+      padding: 7px 10px;
+      font-size: 14px;
+    }
+    .grid { display: grid; gap: 14px; }
+    .two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .card {
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 10px;
+      padding: 16px;
+    }
+    .card h3 { margin-top: 0; }
+    .note {
+      background: #fff8e7;
+      border-left: 4px solid #b7791f;
+      border-radius: 8px;
+      padding: 12px 14px;
+      color: #553b00;
+    }
+    .warn {
+      background: #fff1f2;
+      border-left: 4px solid var(--red);
+      border-radius: 8px;
+      padding: 12px 14px;
+      color: #7f1d1d;
+    }
+    .pill {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 12px;
+      margin-right: 4px;
+      background: var(--soft-blue);
+      color: var(--blue);
+    }
+    .pill.green { background: var(--soft-green); color: var(--green); }
+    .pill.orange { background: var(--soft-orange); color: var(--orange); }
+    .pill.purple { background: var(--soft-purple); color: var(--purple); }
+    .pill.cyan { background: var(--soft-cyan); color: var(--cyan); }
+    .diagram {
+      border: 1px solid var(--line);
+      background: #fbfdff;
+      border-radius: 12px;
+      padding: 16px;
+      overflow-x: auto;
+      margin: 14px 0;
+    }
+    svg { display: block; max-width: 100%; height: auto; margin: 0 auto; }
+    .box { fill: #fff; stroke: #8aa0b8; stroke-width: 1.4; rx: 8; }
+    .b-blue { fill: var(--soft-blue); stroke: var(--blue); }
+    .b-green { fill: var(--soft-green); stroke: var(--green); }
+    .b-orange { fill: var(--soft-orange); stroke: var(--orange); }
+    .b-purple { fill: var(--soft-purple); stroke: var(--purple); }
+    .b-cyan { fill: var(--soft-cyan); stroke: var(--cyan); }
+    .arrow { stroke: #465568; stroke-width: 1.8; fill: none; marker-end: url(#arrow); }
+    .line { stroke: #94a3b8; stroke-width: 1.3; fill: none; }
+    .txt { font-size: 14px; fill: var(--ink); font-weight: 700; }
+    .sub { font-size: 12px; fill: var(--muted); }
+    table { width: 100%; border-collapse: collapse; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: #fff; }
+    th, td { border-bottom: 1px solid var(--line); padding: 10px 12px; vertical-align: top; text-align: left; }
+    th { background: #f3f6fa; }
+    .qa { border-left: 4px solid var(--blue); padding-left: 12px; margin: 14px 0; }
+    .qa b { display: block; margin-bottom: 4px; }
+    .formula {
+      background: #f8fafc;
+      border: 1px dashed #b6c3d1;
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-family: Consolas, "SFMono-Regular", monospace;
+      overflow-x: auto;
+    }
+    .check li { margin: 6px 0; }
+    @media (max-width: 860px) {
+      .two, .three { grid-template-columns: 1fr; }
+      header, section { padding: 20px; }
+      h1 { font-size: 28px; }
+    }
+    @media print {
+      body { background: #fff; }
+      .page { max-width: none; padding: 0; }
+      header, section { box-shadow: none; break-inside: avoid; }
+      .toc { display: none; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <h1>RankMixer 算法工程师深度手册</h1>
+    <p class="lead">
+      这份材料面向已经做过 MMoE / PLE / CTR-CVR 多任务建模的算法工程师。
+      它不把 RankMixer 当“新名字”背，而是从工业排序的计算约束、特征交互、模型扩容、离线训练和线上 serving 来理解。
+    </p>
+    <p>
+      论文：<a href="https://arxiv.org/abs/2507.15551">RankMixer: Scaling Up Ranking Models in Industrial Recommenders</a>。
+      论文摘要强调两个痛点：工业推荐的训练/推理成本受严格延迟和高 QPS 限制；很多手工特征交叉模块继承自 CPU 时代，GPU MFU 低、扩展性差。RankMixer 用 multi-head token mixing 替代 quadratic self-attention，并用 per-token FFN 保留不同特征子空间建模，同时扩展到 Sparse-MoE。
+    </p>
+    <div class="toc">
+      <a href="#why">为什么需要 RankMixer</a>
+      <a href="#math">数学抽象</a>
+      <a href="#block">Block 结构</a>
+      <a href="#mmoe">和 MMoE/PLE 对比</a>
+      <a href="#moe">Sparse-MoE</a>
+      <a href="#training">离线训练</a>
+      <a href="#serving">线上推理</a>
+      <a href="#interview">面试题</a>
+      <a href="#cheatsheet">速记</a>
+    </div>
+  </header>
+
+  <section id="why">
+    <h2>1. 为什么工业排序需要 RankMixer</h2>
+    <div class="grid three">
+      <div class="card">
+        <h3>特征交互越来越重</h3>
+        <p>推荐精排不只是 user/item 两塔，而是用户画像、候选物料、上下文、序列、交叉统计、上游分数等多域特征共同建模。</p>
+        <p><span class="pill">问题</span> 手工交叉模块很多，但结构碎，GPU 利用率低。</p>
+      </div>
+      <div class="card">
+        <h3>Transformer 直接上会贵</h3>
+        <p>Self-attention 对 token 数是二次复杂度，并且 QK/softmax 对线上 P99 不友好。</p>
+        <p><span class="pill orange">取舍</span> RankMixer 用静态 token mixing 换吞吐和稳定延迟。</p>
+      </div>
+      <div class="card">
+        <h3>模型扩容要看 ROI</h3>
+        <p>工业排序不是参数越大越好，而是单位延迟、单位 GPU 成本带来的线上收益。</p>
+        <p><span class="pill green">目标</span> 让参数规模、MFU、线上延迟之间更划算。</p>
+      </div>
+    </div>
+    <p class="note">
+      你可以把 RankMixer 的出发点记成：不是为了“更花哨地做多任务”，而是为了把推荐排序里的多域特征交互模块统一成一个 GPU 友好、可堆叠、可扩容的 backbone。
+    </p>
+  </section>
+
+  <section id="math">
+    <h2>2. 数学抽象：从特征到 token</h2>
+    <p>假设一个曝光样本包含多个特征域：</p>
+    <div class="formula">
+      x = {x_user, x_item, x_context, x_sequence, x_cross}
+    </div>
+    <p>每个域先通过各自的 tokenizer 得到一个 token：</p>
+    <div class="formula">
+      e_i = Tokenizer_i(x_i),  i = 1..T<br/>
+      E = [e_1; e_2; ...; e_T] ∈ R^{T × d}
+    </div>
+    <p>在我们当前仓库里，T=5，对应：</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Token</th>
+          <th>字段域</th>
+          <th>处理方式</th>
+          <th>建模含义</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>user_profile</td><td>unionid、会员、设备、历史统计</td><td>ID/枚举 hash embedding，数值 projection</td><td>用户长期偏好和活跃状态</td></tr>
+        <tr><td>candidate</td><td>content_id、author_id、price、质量分</td><td>ID embedding + 数值 projection</td><td>候选物料自身表达</td></tr>
+        <tr><td>context</td><td>流量来源、位置、时间、会话深度</td><td>枚举 embedding + 数值 projection</td><td>本次请求场景</td></tr>
+        <tr><td>sequence</td><td>点击率、观看深度、跳过率等聚合</td><td>数值 projection</td><td>短期行为偏好</td></tr>
+        <tr><td>cross</td><td>用户-物料相似、价格 gap、意图匹配</td><td>数值 projection</td><td>显式交叉统计</td></tr>
+      </tbody>
+    </table>
+    <p>RankMixer 的核心不是把所有特征拼成一个长向量再 MLP，而是保留 token 维度，让模型知道“这块表示来自哪个特征域”。</p>
+  </section>
+
+  <section id="block">
+    <h2>3. RankMixer Block：Token Mixing + Per-token FFN</h2>
+    <div class="diagram">
+      <svg viewBox="0 0 1180 470" role="img" aria-label="RankMixer block">
+        <defs>
+          <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="#465568"></path>
+          </marker>
+        </defs>
+
+        <rect class="box b-blue" x="40" y="175" width="135" height="70"></rect>
+        <text class="txt" x="107" y="205" text-anchor="middle">E ∈ R^{T×d}</text>
+        <text class="sub" x="107" y="228" text-anchor="middle">feature tokens</text>
+
+        <rect class="box b-purple" x="245" y="140" width="190" height="130"></rect>
+        <text class="txt" x="340" y="178" text-anchor="middle">Multi-Head</text>
+        <text class="txt" x="340" y="202" text-anchor="middle">Token Mixing</text>
+        <text class="sub" x="340" y="230" text-anchor="middle">reshape / transpose</text>
+        <text class="sub" x="340" y="250" text-anchor="middle">no QK attention</text>
+
+        <rect class="box" x="500" y="160" width="125" height="90"></rect>
+        <text class="txt" x="562" y="198" text-anchor="middle">Residual</text>
+        <text class="txt" x="562" y="222" text-anchor="middle">+ Norm</text>
+
+        <rect class="box b-cyan" x="690" y="140" width="190" height="130"></rect>
+        <text class="txt" x="785" y="178" text-anchor="middle">Per-token FFN</text>
+        <text class="sub" x="785" y="207" text-anchor="middle">FFN_user, FFN_item...</text>
+        <text class="sub" x="785" y="232" text-anchor="middle">or Sparse-MoE experts</text>
+
+        <rect class="box" x="945" y="160" width="125" height="90"></rect>
+        <text class="txt" x="1007" y="198" text-anchor="middle">Residual</text>
+        <text class="txt" x="1007" y="222" text-anchor="middle">+ Norm</text>
+
+        <path class="arrow" d="M175 210 L245 210"></path>
+        <path class="arrow" d="M435 210 L500 210"></path>
+        <path class="arrow" d="M625 210 L690 210"></path>
+        <path class="arrow" d="M880 210 L945 210"></path>
+        <path class="line" d="M175 188 C310 70 445 70 545 160"></path>
+        <path class="line" d="M625 188 C770 70 925 70 995 160"></path>
+
+        <rect class="box b-green" x="300" y="330" width="220" height="70"></rect>
+        <text class="txt" x="410" y="360" text-anchor="middle">复杂度</text>
+        <text class="sub" x="410" y="383" text-anchor="middle">Token mixing: O(T·d)</text>
+
+        <rect class="box b-orange" x="640" y="330" width="280" height="70"></rect>
+        <text class="txt" x="780" y="360" text-anchor="middle">对比 Attention</text>
+        <text class="sub" x="780" y="383" text-anchor="middle">Self-attention: O(T²·d) + softmax</text>
+      </svg>
+    </div>
+    <div class="grid two">
+      <div class="card">
+        <h3>Token Mixing 到底学什么</h3>
+        <p>它不是 attention，不会根据样本动态生成 token-token 权重。它通过规则化的维度重排，把不同 token 的 channel 混到一起，让后续 FFN 看到跨域信息。</p>
+        <p>优点是计算稳定、并行友好、延迟可控；代价是动态交互能力弱于 attention。</p>
+      </div>
+      <div class="card">
+        <h3>Per-token FFN 为什么关键</h3>
+        <p>如果 token mixing 只做重排，模型还需要非线性变换来吸收交互后的信息。Per-token FFN 允许每个特征域拥有自己的变换空间。</p>
+        <p>这对应推荐里的异构特征：ID、上下文、序列统计和交叉统计不应该完全共用一个 FFN。</p>
+      </div>
+    </div>
+    <div class="formula">
+      H = Mix(E) + E<br/>
+      Z_i = FFN_i(LN(H_i)) + H_i<br/>
+      y_task = Head_task(Pool(Z))
+    </div>
+  </section>
+
+  <section id="mmoe">
+    <h2>4. 从 MMoE / PLE 迁移理解 RankMixer</h2>
+    <div class="diagram">
+      <svg viewBox="0 0 1120 410" role="img" aria-label="MMoE PLE RankMixer comparison">
+        <defs>
+          <marker id="arrow2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="#465568"></path>
+          </marker>
+        </defs>
+        <text class="txt" x="175" y="40" text-anchor="middle">MMoE / PLE</text>
+        <rect class="box b-blue" x="55" y="75" width="240" height="55"></rect>
+        <text class="txt" x="175" y="108" text-anchor="middle">flat features / bottom</text>
+        <rect class="box b-purple" x="55" y="170" width="105" height="55"></rect>
+        <text class="txt" x="107" y="204" text-anchor="middle">Expert 1</text>
+        <rect class="box b-purple" x="185" y="170" width="105" height="55"></rect>
+        <text class="txt" x="237" y="204" text-anchor="middle">Expert K</text>
+        <rect class="box b-green" x="55" y="265" width="105" height="55"></rect>
+        <text class="txt" x="107" y="299" text-anchor="middle">CTR Tower</text>
+        <rect class="box b-green" x="185" y="265" width="105" height="55"></rect>
+        <text class="txt" x="237" y="299" text-anchor="middle">CVR Tower</text>
+        <path class="arrow" marker-end="url(#arrow2)" d="M175 130 L107 170"></path>
+        <path class="arrow" marker-end="url(#arrow2)" d="M175 130 L237 170"></path>
+        <path class="arrow" marker-end="url(#arrow2)" d="M107 225 L107 265"></path>
+        <path class="arrow" marker-end="url(#arrow2)" d="M237 225 L237 265"></path>
+
+        <text class="txt" x="760" y="40" text-anchor="middle">RankMixer</text>
+        <rect class="box b-blue" x="590" y="75" width="340" height="55"></rect>
+        <text class="txt" x="760" y="108" text-anchor="middle">semantic feature tokens</text>
+        <rect class="box b-purple" x="600" y="170" width="150" height="55"></rect>
+        <text class="txt" x="675" y="204" text-anchor="middle">Token Mixing</text>
+        <rect class="box b-cyan" x="780" y="170" width="150" height="55"></rect>
+        <text class="txt" x="855" y="204" text-anchor="middle">Per-token FFN</text>
+        <rect class="box b-green" x="600" y="265" width="150" height="55"></rect>
+        <text class="txt" x="675" y="299" text-anchor="middle">CTR Head</text>
+        <rect class="box b-green" x="780" y="265" width="150" height="55"></rect>
+        <text class="txt" x="855" y="299" text-anchor="middle">CVR Head</text>
+        <path class="arrow" marker-end="url(#arrow2)" d="M760 130 L675 170"></path>
+        <path class="arrow" marker-end="url(#arrow2)" d="M750 225 L675 265"></path>
+        <path class="arrow" marker-end="url(#arrow2)" d="M855 225 L855 265"></path>
+      </svg>
+    </div>
+    <table>
+      <thead>
+        <tr><th>问题</th><th>MMoE/PLE 视角</th><th>RankMixer 视角</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>共享什么</td>
+          <td>任务之间共享 experts / bottom representation</td>
+          <td>特征 token 之间通过 mixer 共享信息</td>
+        </tr>
+        <tr>
+          <td>差异化建模在哪里</td>
+          <td>task-specific tower 或 task-specific expert</td>
+          <td>per-token FFN 保留 feature domain subspace</td>
+        </tr>
+        <tr>
+          <td>冲突来源</td>
+          <td>任务目标冲突，例如 CTR 与 CVR</td>
+          <td>特征域异构 + 高阶交互 + 扩容成本</td>
+        </tr>
+        <tr>
+          <td>能否组合</td>
+          <td>可以作为 task head 层</td>
+          <td>可以作为 backbone 接 MMoE/PLE 或普通多任务 head</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="moe">
+    <h2>5. Sparse-MoE 和 DTSI</h2>
+    <p>RankMixer 进一步扩到 Sparse-MoE，核心目标是提高参数容量，但不让单次推理成本线性增长。</p>
+    <div class="formula">
+      FFN_i(h_i) = Σ_j gate_{i,j}(h_i) · Expert_{i,j}(h_i)
+    </div>
+    <div class="grid two">
+      <div class="card">
+        <h3>Dense Training</h3>
+        <p>训练时让更多专家参与，更多专家获得梯度，缓解“专家训练不充分”。</p>
+        <p><span class="pill green">收益</span> 专家更充分训练，路由更稳定。</p>
+      </div>
+      <div class="card">
+        <h3>Sparse Inference</h3>
+        <p>推理时只取 top-k experts，减少单次请求计算量。</p>
+        <p><span class="pill orange">风险</span> top-k 路由倾斜、跨设备通信、P99 抖动。</p>
+      </div>
+    </div>
+    <h3>算法工程师要能说出的 MoE 监控</h3>
+    <ul class="check">
+      <li>expert activation ratio：每个专家被选中的比例。</li>
+      <li>routing entropy：路由是否过度集中。</li>
+      <li>load balance loss：专家负载是否均衡。</li>
+      <li>per-expert gradient norm：是否有专家学不到。</li>
+      <li>线上 top-k 稳定性：同类请求是否路由过度抖动。</li>
+      <li>P99 latency：是否因专家分布或跨设备通信产生长尾。</li>
+    </ul>
+    <p class="warn">面试陷阱：不要把 RankMixer 的 Sparse-MoE 和 MMoE 的 task gate 混为一谈。MMoE gate 是任务视角，RankMixer MoE 是 backbone 扩容和 per-token FFN 替换视角。</p>
+  </section>
+
+  <section id="training">
+    <h2>6. 离线训练：样本、标签、损失、评估</h2>
+    <h3>6.1 样本组织</h3>
+    <p>工业精排通常是 request 内多个候选：</p>
+    <div class="formula">
+      D = {(request_id, unionid, item_id, features, ctr_label, cvr_label)}
+    </div>
+    <p>训练可以 pointwise，但验证必须 request-wise。因为线上展示是 list 排序，不是孤立样本分类。</p>
+
+    <h3>6.2 CTR/CVR 多任务目标</h3>
+    <div class="formula">
+      L = BCE(logit_ctr, y_ctr) + α · BCE(logit_cvr, y_cvr) + β · L_aux_moe
+    </div>
+    <p>如果 CVR 极稀疏，可以考虑：</p>
+    <ul class="check">
+      <li>提高 CVR loss 权重 α。</li>
+      <li>按转化样本重采样或加权。</li>
+      <li>引入 ESMM 思路：pCTCVR = pCTR · pCVR。</li>
+      <li>处理 delayed feedback，避免未回传转化被误当负样本。</li>
+    </ul>
+
+    <h3>6.3 评估指标</h3>
+    <table>
+      <thead>
+        <tr><th>指标</th><th>看什么</th><th>注意点</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>CTR AUC</td><td>点击区分能力</td><td>可能和最终 GMV/转化目标不一致</td></tr>
+        <tr><td>CVR AUC</td><td>转化区分能力</td><td>样本稀疏，波动大</td></tr>
+        <tr><td>GAUC</td><td>按用户/request 加权排序能力</td><td>比全局 AUC 更贴排序</td></tr>
+        <tr><td>NDCG@K</td><td>列表前 K 排序质量</td><td>和线上展示更接近</td></tr>
+        <tr><td>Calibration</td><td>预估概率是否可信</td><td>影响融合公式和出价/价值预估</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="serving">
+    <h2>7. 线上推理：算法工程师必须懂的工程约束</h2>
+    <div class="diagram">
+      <svg viewBox="0 0 1180 360" role="img" aria-label="online serving">
+        <defs>
+          <marker id="arrow3" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="#465568"></path>
+          </marker>
+        </defs>
+        <rect class="box b-blue" x="45" y="115" width="125" height="70"></rect>
+        <text class="txt" x="107" y="145" text-anchor="middle">召回</text>
+        <text class="sub" x="107" y="166" text-anchor="middle">1k-10k</text>
+
+        <rect class="box b-green" x="220" y="115" width="125" height="70"></rect>
+        <text class="txt" x="282" y="145" text-anchor="middle">粗排</text>
+        <text class="sub" x="282" y="166" text-anchor="middle">100-1000</text>
+
+        <rect class="box b-purple" x="395" y="95" width="145" height="110"></rect>
+        <text class="txt" x="467" y="135" text-anchor="middle">特征服务</text>
+        <text class="sub" x="467" y="158" text-anchor="middle">join/cache/default</text>
+        <text class="sub" x="467" y="178" text-anchor="middle">schema check</text>
+
+        <rect class="box b-cyan" x="590" y="95" width="160" height="110"></rect>
+        <text class="txt" x="670" y="135" text-anchor="middle">RankMixer</text>
+        <text class="sub" x="670" y="158" text-anchor="middle">batch inference</text>
+        <text class="sub" x="670" y="178" text-anchor="middle">pCTR / pCVR</text>
+
+        <rect class="box b-orange" x="800" y="115" width="140" height="70"></rect>
+        <text class="txt" x="870" y="145" text-anchor="middle">业务融合</text>
+        <text class="sub" x="870" y="166" text-anchor="middle">score formula</text>
+
+        <rect class="box b-green" x="990" y="115" width="125" height="70"></rect>
+        <text class="txt" x="1052" y="145" text-anchor="middle">重排展示</text>
+        <text class="sub" x="1052" y="166" text-anchor="middle">logging</text>
+
+        <path class="arrow" marker-end="url(#arrow3)" d="M170 150 L220 150"></path>
+        <path class="arrow" marker-end="url(#arrow3)" d="M345 150 L395 150"></path>
+        <path class="arrow" marker-end="url(#arrow3)" d="M540 150 L590 150"></path>
+        <path class="arrow" marker-end="url(#arrow3)" d="M750 150 L800 150"></path>
+        <path class="arrow" marker-end="url(#arrow3)" d="M940 150 L990 150"></path>
+
+        <text class="sub" x="590" y="275" text-anchor="middle">算法侧要和工程侧共同守住：P99、GPU 利用率、feature freshness、训推一致、fallback</text>
+      </svg>
+    </div>
+    <div class="grid two">
+      <div class="card">
+        <h3>线上打分公式</h3>
+        <p>常见不是直接用一个 sigmoid，而是业务目标融合：</p>
+        <pre>score = pCTR
+score = pCTR * pCVR
+score = pCTR * pCVR * price
+score = w1*pCTR + w2*pCVR + w3*quality - w4*risk</pre>
+      </div>
+      <div class="card">
+        <h3>训推一致 Checklist</h3>
+        <ul class="check">
+          <li>hash bucket 数和 hash 函数一致。</li>
+          <li>数值归一化参数一致。</li>
+          <li>缺失值默认值一致。</li>
+          <li>枚举值大小写和映射一致。</li>
+          <li>序列截断窗口一致。</li>
+          <li>模型版本和 feature schema 版本绑定。</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="interview">
+    <h2>8. 面试题：算法工程师版</h2>
+    <div class="qa">
+      <b>Q1：RankMixer 相比 DCN/DeepFM 的核心优势是什么？</b>
+      <p>DCN/DeepFM 更偏显式或半显式特征交叉，适合中等规模特征交互；RankMixer 把多域特征组织成 token，通过可堆叠 block 做统一交互，更适合工业大模型扩容和 GPU 并行。</p>
+    </div>
+    <div class="qa">
+      <b>Q2：为什么 RankMixer 不直接用 attention？</b>
+      <p>工业精排要在高 QPS 和严格 P99 下服务。Attention 的 token-token 动态权重计算和 softmax 会带来更高成本。RankMixer 用静态 token mixing 保留跨域信息流动，同时减少复杂度和延迟波动。</p>
+    </div>
+    <div class="qa">
+      <b>Q3：Token Mixing 没有参数，会不会表达力不足？</b>
+      <p>它本身确实弱于 attention 的动态交互，但后面的 per-token FFN 提供非线性变换。RankMixer 的设计不是追求单模块最强，而是在表达力、吞吐、MFU 和线上延迟之间取工业最优解。</p>
+    </div>
+    <div class="qa">
+      <b>Q4：RankMixer 如何处理多任务？</b>
+      <p>RankMixer backbone 输出共享表示，后面可以接 CTR/CVR 多个 head，也可以接 MMoE/PLE。RankMixer 解决的是 backbone 的特征交互，MMoE/PLE 解决的是任务共享和分离。</p>
+    </div>
+    <div class="qa">
+      <b>Q5：CVR 很稀疏时怎么训？</b>
+      <p>可以提高 CVR loss 权重、做转化样本重采样、引入 ESMM 的 pCTR/pCVR 链式建模、处理 delayed feedback，并重点看 CVR 分桶校准和 NDCG@K，而不只看 AUC。</p>
+    </div>
+    <div class="qa">
+      <b>Q6：Sparse-MoE 上线最大风险是什么？</b>
+      <p>不是离线指标，而是路由和系统稳定性：专家负载倾斜、跨设备通信、P99 抖动、部分专家训练不足、fallback 复杂。上线必须配 expert 激活监控和延迟监控。</p>
+    </div>
+    <div class="qa">
+      <b>Q7：离线提升为什么线上可能不涨？</b>
+      <p>可能因为候选集不一致、线上特征新鲜度不同、分数校准差、业务融合公式不匹配、延迟导致降级、特征缺失、或者离线指标不是线上目标的好 proxy。</p>
+    </div>
+    <div class="qa">
+      <b>Q8：item_id 是否应该进模型？</b>
+      <p>通常会作为 categorical ID 进 embedding，但要警惕冷启动、长尾、hash 冲突和 ID 记忆过强。大规模系统里会结合 item 语义特征、作者/类目、统计特征来缓解。</p>
+    </div>
+    <div class="qa">
+      <b>Q9：RankMixer 怎么做 ablation？</b>
+      <p>去掉 token mixing、把 per-token FFN 改共享 FFN、去掉 sequence token、去掉 cross token、dense vs sparse MoE、不同 token 数、不同 model_dim/layers/top-k，分别看 AUC/NDCG/延迟/MFU。</p>
+    </div>
+    <div class="qa">
+      <b>Q10：一句话总结 RankMixer？</b>
+      <p>RankMixer 是面向工业排序扩容的硬件友好 backbone，它把多域特征 token 化，用 token mixing 做高效跨域交互，用 per-token FFN 保留域内建模，并通过 Sparse-MoE 在参数容量和线上成本之间折中。</p>
+    </div>
+  </section>
+
+  <section id="cheatsheet">
+    <h2>9. 面试前 10 分钟速记</h2>
+    <div class="grid two">
+      <div class="card">
+        <h3>必须背下来的主链路</h3>
+        <pre>features
+-> semantic tokens
+-> token mixing
+-> per-token FFN / Sparse-MoE
+-> pooling
+-> CTR/CVR heads
+-> business score</pre>
+      </div>
+      <div class="card">
+        <h3>必须主动讲出的工业点</h3>
+        <ul class="check">
+          <li>不是只追 AUC，要看 P99、吞吐、MFU。</li>
+          <li>训练和推理 feature schema 必须版本绑定。</li>
+          <li>Sparse-MoE 要看 expert load 和路由稳定。</li>
+          <li>CVR 稀疏要处理 delayed feedback 和校准。</li>
+          <li>RankMixer 和 MMoE/PLE 是 backbone 与 task sharing 的关系。</li>
+        </ul>
+      </div>
+    </div>
+    <p class="note">
+      推荐你的面试表达顺序：先说工业痛点，再讲 token 化和 block 结构，然后对比 MMoE/PLE，最后补离线训练、线上推理、Sparse-MoE 风险。这个顺序比单纯背模型结构更像真实算法工程师。
+    </p>
+  </section>
+</div>
+</body>
+</html>

@@ -1,0 +1,269 @@
+# OneTrans 特征配置文件
+# 根据你的 Hive 表字段修改此文件，无需改动任何 Python 代码
+#
+# 使用方式：
+#   python train.py --data_mode parquet \
+#       --train_dir ./data/parquet/train \
+#       --val_dir   ./data/parquet/val   \
+#       --feature_config feature_config.yaml
+#
+# ══════════════════════════════════════════════════════════════════════════════
+# 非序列特征（ns_features）支持 4 种类型，通过 type 字段区分：
+#
+#   type: continuous      连续数值（年龄、价格、点击数…）
+#                           scale: 除以这个数做归一化，填预估最大值
+#                           scale: -1  → 改用 log(x+1) 归一化（适合长尾分布）
+#
+#   type: discrete_id     离散整数 ID（城市ID、类目ID、品牌ID…）
+#                           数字大小本身没有意义，走 Embedding
+#                           vocab_size: ID 的最大值+1（决定 Embedding 表大小）
+#                           emb_dim:    Embedding 维度（建议 8~32）
+#
+#   type: discrete_str    字符串类别（性别、平台、省份名…）
+#                           先映射成整数 ID，再走 Embedding
+#                           vocab_size: 类别总数+1
+#                           emb_dim:    Embedding 维度
+#                           （字符串→ID 的映射在数据预处理阶段完成，
+#                             Hive 里建议提前用 dense_rank() 转成整数存储）
+#
+#   type: multihot        多值离散特征（用户兴趣标签、商品标签…）
+#                           Hive 里存为逗号分隔字符串，如 "3,17,42"
+#                           vocab_size: 标签总数+1
+#                           emb_dim:    Embedding 维度
+#                           max_len:    最多取前 max_len 个值，超出截断
+#                           pooling:    多个 Embedding 的聚合方式 mean/sum/max
+# ══════════════════════════════════════════════════════════════════════════════
+
+ns_features:
+
+  # ── 连续型数值特征（type: continuous）─────────────────────────────────────
+
+  # 用户年龄（0~100岁，除以100归一化到0~1）
+  - name: user_age
+    type: continuous
+    scale: 100.0
+
+  # 商品价格（长尾分布，用 log(x+1) 归一化）
+  - name: item_price
+    type: continuous
+    scale: -1               # -1 表示 log(x+1)，适合价格/销量等长尾字段
+
+  # 用户近7天点击数（长尾，用 log）
+  - name: user_7d_clicks
+    type: continuous
+    scale: -1
+
+  # 用户近30天消费金额（长尾，用 log）
+  - name: user_30d_gmv
+    type: continuous
+    scale: -1
+
+  # 商品近7天CTR（已在0~1之间，scale=1不缩放）
+  - name: item_ctr_7d
+    type: continuous
+    scale: 1.0
+
+  # 请求发生的小时（0~23，除以24归一化）
+  - name: hour
+    type: continuous
+    scale: 24.0
+
+  # 星期几（0~6，除以7归一化）
+  - name: day_of_week
+    type: continuous
+    scale: 7.0
+
+  # 商品上架天数（最大值约365，除以365）
+  - name: item_online_days
+    type: continuous
+    scale: 365.0
+
+  # 商品好评率（0.0~1.0，直接用）
+  - name: item_good_rate
+    type: continuous
+    scale: 1.0
+
+
+  # ── 离散整数 ID 特征（type: discrete_id）──────────────────────────────────
+  # 这类特征的数字只是编号，大小没有意义，必须走 Embedding
+
+  # 城市 ID（全国约400个城市，vocab_size 留余量）
+  - name: user_city_id
+    type: discrete_id
+    vocab_size: 500
+    emb_dim: 16
+
+  # 一级类目 ID（约100个）
+  - name: item_cate1_id
+    type: discrete_id
+    vocab_size: 128
+    emb_dim: 16
+
+  # 二级类目 ID（约1000个）
+  - name: item_cate2_id
+    type: discrete_id
+    vocab_size: 1024
+    emb_dim: 16
+
+  # 品牌 ID（约10万个，emb_dim 可以大一些）
+  - name: item_brand_id
+    type: discrete_id
+    vocab_size: 100000
+    emb_dim: 32
+
+  # 用户设备类型 ID（几十种）
+  - name: device_type_id
+    type: discrete_id
+    vocab_size: 64
+    emb_dim: 8
+
+
+  # ── 字符串类别特征（type: discrete_str）───────────────────────────────────
+  # 必须在 Hive 里提前转成整数 ID，模型只接受整数输入。
+  # 推荐做法：用 dense_rank() 生成连续整数，0 保留给 NULL/未知值。
+  #
+  # Hive SQL 示例（以性别为例）：
+  #   SELECT
+  #     CASE user_gender
+  #       WHEN 'male'    THEN 1
+  #       WHEN 'female'  THEN 2
+  #       ELSE 0                  -- NULL / 未知 → 0（padding_idx）
+  #     END AS user_gender,
+  #     ...
+  #   FROM your_table
+  #
+  # 对于高基数字符串（如省份、城市名），用 dense_rank()：
+  #   SELECT
+  #     COALESCE(dense_rank() OVER (ORDER BY user_province), 0) AS user_province_id,
+  #     ...
+  #   FROM your_table
+  #   注意：dense_rank 从 1 开始，0 自动留给 NULL（需要 COALESCE 处理）
+  #
+  # vocab_size 设置为：类别总数 + 1（+1 是为了留出 0 作为 padding/unknown）
+
+  # 用户性别（"male"/"female"/"unknown" → 0/1/2）
+  - name: user_gender
+    type: discrete_str
+    vocab_size: 4           # 类别数+1（留一个 unknown/padding 位）
+    emb_dim: 4
+
+  # 用户手机操作系统（"ios"/"android"/"other" → 0/1/2）
+  - name: user_os
+    type: discrete_str
+    vocab_size: 4
+    emb_dim: 4
+
+  # 商品来源平台（"self"/"third_party"/"overseas" → 0/1/2）
+  - name: item_source
+    type: discrete_str
+    vocab_size: 8
+    emb_dim: 4
+
+  # 用户所在省份（34个省级行政区）
+  - name: user_province
+    type: discrete_str
+    vocab_size: 40
+    emb_dim: 8
+
+
+  # ── 多值离散特征（type: multihot）─────────────────────────────────────────
+  # Hive 里存为逗号分隔字符串，如 "3,17,42,88"
+  # 每个 ID 查 Embedding 后做 pooling（mean/sum/max）
+
+  # 用户兴趣标签（最多取前10个，做 mean pooling）
+  - name: user_interest_tags
+    type: multihot
+    vocab_size: 1000
+    emb_dim: 16
+    max_len: 10
+    pooling: mean
+
+  # 商品标签（最多取前5个）
+  - name: item_tags
+    type: multihot
+    vocab_size: 2000
+    emb_dim: 16
+    max_len: 5
+    pooling: mean
+
+  # 用户历史购买类目（最多取前8个）
+  - name: user_buy_cates
+    type: multihot
+    vocab_size: 128
+    emb_dim: 8
+    max_len: 8
+    pooling: mean
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 行为序列特征（sequences）
+# 每条行为是一个 item，由 fields 里声明的子字段拼成向量后输入 Transformer
+# ══════════════════════════════════════════════════════════════════════════════
+# 字段说明：
+#   name:        序列名称（用于日志和 handler 匹配请求字段）
+#   timestamps:  Unix 时间戳序列（逗号分隔，用于时序感知 tokenizer，可填 null）
+#   max_len:     截取最近 max_len 条，超出截断，不足补 0
+#   fields:      该序列包含的子字段列表（顺序决定向量拼接顺序）
+#     - col:     Hive 字段名（逗号分隔数值字符串）
+#       scale:   归一化分母，填预估最大值；-1 表示 log(x+1)
+#
+# 每条序列的向量维度 = len(fields)，不同序列可以有不同维度。
+# 注意：同一个模型里所有序列的 seq_dim 必须相同（因为共享 S-token 参数），
+#       如果字段数不同，可以用 null 占位字段补齐，或者在 Hive 里补 0 列。
+
+sequences:
+  # 点击序列（最近50条，包含 id + 类目 + 价格，seq_dim=3）
+  - name: click
+    timestamps: click_seq_ts
+    max_len: 50
+    fields:
+      - col: click_seq_ids
+        scale: 1000000.0      # item ID 总量级约100万
+      - col: click_seq_cats
+        scale: 100.0          # 类目 ID 约100个
+      - col: click_seq_prices
+        scale: 1000.0         # 价格最大约1000元
+
+  # 购买序列（最近10条，包含 id + 类目 + 品牌，seq_dim=3）
+  # 注意：和点击序列都是 seq_dim=3，字段内容不同但维度对齐
+  - name: purchase
+    timestamps: buy_seq_ts
+    max_len: 10
+    fields:
+      - col: buy_seq_ids
+        scale: 1000000.0
+      - col: buy_seq_cats
+        scale: 100.0
+      - col: buy_seq_brands
+        scale: 50000.0        # 品牌 ID 约5万个
+
+  # 加购序列（最近20条，包含 id + 类目 + 价格，seq_dim=3）
+  - name: cart
+    timestamps: cart_seq_ts
+    max_len: 20
+    fields:
+      - col: cart_seq_ids
+        scale: 1000000.0
+      - col: cart_seq_cats
+        scale: 100.0
+      - col: cart_seq_prices
+        scale: 1000.0
+
+  # 搜索点击序列（最近30条，只有 id，seq_dim=1）
+  # 如果要和其他序列 seq_dim 对齐，可以补两个 null 占位字段（值全为0）
+  - name: search_click
+    timestamps: search_click_seq_ts
+    max_len: 30
+    fields:
+      - col: search_click_seq_ids
+        scale: 1000000.0
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 标签字段（labels）
+# Hive 表中的标签列名，值为 0/1 的二分类标签
+# 每个标签对应模型的一个预测头（多任务学习）
+# ══════════════════════════════════════════════════════════════════════════════
+labels:
+  - ctr_label     # 点击率标签
+  - cvr_label     # 转化率标签

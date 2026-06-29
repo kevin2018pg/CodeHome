@@ -1,0 +1,7 @@
+{
+  "model_name": "onetrans_ranking",
+  "mode": "ranking",
+  "task_names": ["ctr", "cvr"],
+  "feature_config": "feature_config.yaml",
+  "device": "cpu"
+}

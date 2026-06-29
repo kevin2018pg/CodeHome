@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+*.pyo
+models/*.pkl
+models/*.json
+test_output.txt
+.env

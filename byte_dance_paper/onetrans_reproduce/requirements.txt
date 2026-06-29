@@ -1,0 +1,12 @@
+# 训练 / 推理核心依赖
+torch>=2.0.0
+numpy>=1.24.0
+tqdm>=4.65.0
+scikit-learn>=1.3.0
+pandas>=2.0.0
+pyarrow>=12.0.0
+pyyaml>=6.0
+
+# TorchServe 在线服务部署（可选，仅需要 torchserve/ 目录下功能时安装）
+# torchserve>=0.9.0
+# torch-model-archiver>=0.9.0

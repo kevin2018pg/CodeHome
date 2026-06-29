@@ -1,0 +1,50 @@
+{
+  "ns_features": {
+    "user_age":              25.0,
+    "item_price":            199.0,
+    "item_ctr_7d":           0.08,
+    "user_7d_clicks":        35.0,
+    "user_30d_gmv":          1200.0,
+    "item_online_days":      30.0,
+    "item_good_rate":        0.92,
+    "hour":                  20.0,
+    "day_of_week":           3.0,
+    "user_city_id":          42,
+    "item_cate1_id":         5,
+    "item_cate2_id":         108,
+    "item_brand_id":         3321,
+    "device_type_id":        2,
+    "user_gender":           1,
+    "user_os":               0,
+    "item_source":           1,
+    "user_province":         11,
+    "user_interest_tags":    [3, 17, 42, 88],
+    "item_tags":             [5, 22],
+    "user_buy_cates":        [5, 12]
+  },
+  "sequences": [
+    {
+      "name":       "click",
+      "ids":        [10023, 50441, 8832, 22100, 6677],
+      "cats":       [5,     12,    5,    8,     3],
+      "prices":     [99.0,  199.0, 49.0, 299.0, 19.9],
+      "timestamps": [1700000100, 1700000200, 1700000400, 1700000600, 1700000800]
+    },
+    {
+      "name":       "purchase",
+      "ids":        [10023],
+      "timestamps": [1700000050]
+    },
+    {
+      "name":       "cart",
+      "ids":        [50441, 8832],
+      "cats":       [12,    5],
+      "timestamps": [1700000150, 1700000350]
+    },
+    {
+      "name":       "search_click",
+      "ids":        [22100, 6677, 10023],
+      "timestamps": [1700000500, 1700000700, 1700000900]
+    }
+  ]
+}

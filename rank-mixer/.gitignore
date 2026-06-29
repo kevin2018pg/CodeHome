@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+*.pyo
+artifacts/model/*.pt
+artifacts/model/*.pkl
+artifacts/model/*.json
+.DS_Store
