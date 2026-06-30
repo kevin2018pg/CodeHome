@@ -1,0 +1,25 @@
+.idea/.gitignore
+  s_dcb7254b920bc5::t_3e9aeddb028e8b 5
+.idea/misc.xml
+  s_dcb7254b920bc5::t_3f8861de18407c 3
+.idea/modules.xml
+  s_dcb7254b920bc5::t_9a386397a5898a 5
+.idea/vcs.xml
+  s_dcb7254b920bc5::t_77cc49d267cd7e 5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "f7295a4c347f193ecc3e9a00a627feed314418cc",
+  "prompts": {},
+  "sessions": {
+    "s_dcb7254b920bc5": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "75ae2945-2de6-4c50-9e5f-466d83c91aa7",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "chendong <dong4.chen@ly.com>"
+    }
+  }
+}
