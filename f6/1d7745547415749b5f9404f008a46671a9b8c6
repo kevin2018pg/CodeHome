@@ -1,0 +1,64 @@
+algo_online_config_modify/计算节点12.groovy
+  h_7ed358bfca073a 1-247
+rank-mixer/artifacts/model/metrics.json
+  9878ecba94e914f5 1-49
+rank-mixer/artifacts/data/valid.csv
+  9878ecba94e914f5 1-2322
+byte_dance_paper/onetrans_reproduce/INTERVIEW.md
+  h_7ed358bfca073a 1-462
+rank-mixer/artifacts/predictions/test_predictions.csv
+  9878ecba94e914f5 1-1639
+rank-mixer/artifacts/top_predictions_preview.csv
+  9878ecba94e914f5 1-51
+rank-mixer/artifacts/data/train.csv
+  9878ecba94e914f5 1-6311
+algo_online_config_modify/计算节点6.groovy
+  h_7ed358bfca073a 1-210
+rank-mixer/artifacts/data/test.csv
+  9878ecba94e914f5 1-1639
+byte_dance_paper/onetrans_reproduce/model.py
+  h_7ed358bfca073a 1-530
+rank-mixer/artifacts/verification_summary.json
+  9878ecba94e914f5 1-101
+rank-mixer/artifacts/predictions/test_predictions_sparse.csv
+  9878ecba94e914f5 1-1639
+推荐统一Backbone落地坑与解决方案.md
+  s_5cd6c17190fc3d::t_5f5e026a25300b 1,15-22,145-148,150-153,393-400
+  s_5cd6c17190fc3d::t_8777a0d098a32e 2-14,23-144,149,154-392,401-541
+rank-mixer/artifacts/model/metrics_sparse.json
+  9878ecba94e914f5 1-41
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "f61d7745547415749b5f9404f008a46671a9b8c6",
+  "prompts": {
+    "9878ecba94e914f5": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019dcd09-c5e6-79d2-b957-276a4d188ade",
+        "model": "gpt-5.4"
+      },
+      "human_author": "chendong <dong4.chen@ly.com>",
+      "total_additions": 0,
+      "total_deletions": 0,
+      "accepted_lines": 13792,
+      "overriden_lines": 0
+    }
+  },
+  "humans": {
+    "h_7ed358bfca073a": {
+      "author": "chendong"
+    }
+  },
+  "sessions": {
+    "s_5cd6c17190fc3d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019dd6fb-cb70-73d1-8f04-14b0750886a2",
+        "model": "gpt-5.5"
+      },
+      "human_author": "chendong <dong4.chen@ly.com>"
+    }
+  }
+}
