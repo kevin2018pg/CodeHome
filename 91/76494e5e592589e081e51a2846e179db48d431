@@ -1,0 +1,19 @@
+.gitignore
+  s_dcb7254b920bc5::t_3f4bf6dc897c7a 1-30
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "9176494e5e592589e081e51a2846e179db48d431",
+  "prompts": {},
+  "sessions": {
+    "s_dcb7254b920bc5": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "75ae2945-2de6-4c50-9e5f-466d83c91aa7",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "chendong <dong4.chen@ly.com>"
+    }
+  }
+}
