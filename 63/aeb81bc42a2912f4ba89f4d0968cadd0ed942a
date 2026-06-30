@@ -1,0 +1,22 @@
+review_notes/召回/u2i双塔召回/U2I双塔召回.md
+  s_dcb7254b920bc5::t_c52e2aea73bd80 21-22,26,30,34-35,68-69,78,82-104,117-118
+  s_dcb7254b920bc5::t_2ab80c2679cbff 136-137,168-169,178-179,182,220-221,224,235-236,253,257-258,261-262,266-271,276-327,332-333,338-339,348-349,364-365,376-377,396-397,401,469,475-476,487-488
+review_notes/召回/mind多兴趣召回/二阶段兴趣点召回.md
+  s_dcb7254b920bc5::t_267107aaf17cae 162-196
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "63aeb81bc42a2912f4ba89f4d0968cadd0ed942a",
+  "prompts": {},
+  "sessions": {
+    "s_dcb7254b920bc5": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "75ae2945-2de6-4c50-9e5f-466d83c91aa7",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "chendong <dong4.chen@ly.com>"
+    }
+  }
+}
