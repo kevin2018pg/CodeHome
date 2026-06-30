@@ -1,0 +1,24 @@
+review_notes/召回/u2i双塔召回/U2I双塔召回.md
+  s_dcb7254b920bc5::t_3a18a4c21daba9 82-83,278-279,301,323-329,491-543
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.5",
+  "base_commit_sha": "fdc754ef812e9fdedd2cfcbab8169d47e574e717",
+  "prompts": {},
+  "humans": {
+    "h_5d931ba58df68b": {
+      "author": "chendong <dong4.chen@ly.com>"
+    }
+  },
+  "sessions": {
+    "s_dcb7254b920bc5": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "75ae2945-2de6-4c50-9e5f-466d83c91aa7",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "chendong <dong4.chen@ly.com>"
+    }
+  }
+}
