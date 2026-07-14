@@ -45,7 +45,7 @@
 - item embedding（来自双塔 item 塔 / 序列模型 / 图模型 / 多模态）→ 建 ANN → 拿 trigger item 找近邻。
 - 优点：泛化好、能召回没共现过的语义相似 item（缓解冷启）。
 - 缺点：解释性弱于共现。
-- 图模型这条分支（DeepWalk/Item2Vec/EGES/GraphSAGE-PinSAGE）详见 [Graph Embedding图召回.md](Graph%20Embedding图召回.md)。
+- 图模型这条分支（DeepWalk/Item2Vec/EGES/GraphSAGE-PinSAGE/LightGCN）详见 [图召回GNN.md](../图召回gnn/图召回GNN.md)。
 
 > 工业实践：**Swing(共现) + 向量 i2i(泛化) 双路融合**，共现保准确、向量保覆盖。
 

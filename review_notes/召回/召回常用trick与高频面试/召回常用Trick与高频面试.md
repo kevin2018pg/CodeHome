@@ -22,16 +22,17 @@
 ## 二、样本类 Trick（最值钱，召回上限主要看这里）
 
 
-| Trick                 | 干啥                   | 备注                                |
-| --------------------- | -------------------- | --------------------------------- |
-| **未曝光随机负为主体**         | 治 SSB、学全库分布          | 召回负样本的地基                          |
-| **中段分数难负(~0.6 那批)**   | 提精度、避 false negative | Facebook EBR：rank 100~500，最难的反而掉点 |
-| **false negative 过滤** | 防教坏                  | 剔历史正反馈 / 同 session 点过 / 高分 top    |
-| **曝光未点击当少量 hard 负**   | 真实负反馈                | 要去噪：剔曝光<1s、广告位、历史转化过              |
-| **curriculum 由易到难**   | 训练更稳                 | 初期多 easy，后期加 hard                 |
-| **logQ 校正**           | 防过度打压热门(纠偏)          | in-batch 负偏热门，打分减 log Q(i)        |
-| **混合负采样 MNS**         | 负样本分布贴近全库            | in-batch(热) + 全局均匀(长尾)           |
-| **In-Context Training** | 防 category hard search 引入的数据泄露 | batch 内全同类目，消除类目捷径，见下 |
+| Trick                   | 干啥                             | 备注                                |
+| ----------------------- | ------------------------------ | --------------------------------- |
+| **未曝光随机负为主体**           | 治 SSB、学全库分布                    | 召回负样本的地基                          |
+| **中段分数难负(~0.6 那批)**     | 提精度、避 false negative           | Facebook EBR：rank 100~500，最难的反而掉点 |
+| **false negative 过滤**   | 防教坏                            | 剔历史正反馈 / 同 session 点过 / 高分 top    |
+| **曝光未点击当少量 hard 负**     | 真实负反馈                          | 要去噪：剔曝光<1s、广告位、历史转化过              |
+| **curriculum 由易到难**     | 训练更稳                           | 初期多 easy，后期加 hard                 |
+| **logQ 校正**             | 防过度打压热门(纠偏)                    | in-batch 负偏热门，打分减 log Q(i)        |
+| **混合负采样 MNS**           | 负样本分布贴近全库                      | in-batch(热) + 全局均匀(长尾)            |
+| **In-Context Training** | 防 category hard search 引入的数据泄露 | batch 内全同类目，消除类目捷径，见下             |
+
 
 **In-Context Training（LongRetriever，字节电商）**：用 hard search 从超长序列里按候选类目过滤子序列 `S_u`，in-batch 负样本却是不同类目 → 模型只需判断类目是否匹配就能区分正负（数据泄露，离线指标虚高）。解法：同一 batch 内所有 candidate 限定同一类目，负样本也是同类目，模型被迫学类目内的细粒度偏好。实现：两段式 BatchSampler（先抽类目，再抽该类目样本）+ 子序列缓存。
 
@@ -46,7 +47,7 @@
 - **L2 normalize**：内积变余弦，度量统一、训练稳、压模长型热门偏置；配 temperature 用。**训练/serving 必须一致**(想保留模长热度先验或 MIND squash 时才不做)。
 - **temperature τ**：InfoNCE 里 `cos/τ`，τ 小(0.05~0.1)拉大正负差、学得更"硬"，太小不稳。**τ 是召回最敏感超参之一**。
 - **SENet / 特征加权**：双塔进塔前给特征自适应加权，缓解"塔太浅、交叉不够"。
-- **用户塔 Transformer（SASRec 式）+ item 塔 MLP——非对称是刻意设计**：
+- **用户塔 Transformer（SASRec 式）+ item 塔 MLP——非对称是刻意设计**
   - 用户是动态实体（行为序列每次请求不同），必须序列建模；item 是静态实体（属性固定），离线批计算好向量入库即可；
   - 用户塔 self-attention（causal mask，1~2 层）不依赖候选 item，user 向量可算一次打全库（**可索引**）；精排的 target attention 依赖候选，不能用于召回；
   - item 塔 MLP：`id_emb + cate + tag + author + stat_feats → MLP → L2 norm → item 向量`，离线全量预算，线上不参与推理。
@@ -100,9 +101,10 @@
 - **新用户**：默认向量/人群泛化向量 + 热门兜底；bandit(Thompson Sampling)探索。
 - **ID/内容混合 embedding(EGES 思路)**：行为多用 ID，行为少用 side info，平滑过渡。
 - **不用三塔时 item 塔冷启三路线**（train-serving 一致是关键）：
-  - **DropoutNet**：训练时以概率 0.3~0.5 dropout preference branch（ID emb + 统计量），content branch 不 dropout；serving 冷启 item 正好走"dropout 路径"，完全一致。Alibaba EasyRec 开箱可用。
-  - **预测网络（MWUF）**：训练轻量 `predictor(content) → 合成 ID emb`，用热身 item 真实 ID emb 做 MSE 监督；serving 时冷启 item → predictor → 合成 ID emb → 正常 item tower，结构不变，合成 emb 落在热身分布里。
-  - **Semantic ID（根治）**：RQ-VAE 把内容向量量化成离散 token 作为"语义 ID"，新 item 上线即有有意义的 ID，YouTube RecSys'24 落地，适合长期投入。
+  - **DropoutNet（工业界用得最多）**：训练时以概率 0.3~0.5 **整支清零**（不是逐神经元）preference branch（ID emb + 统计量），content branch 不 dropout；serving 冷启 item 正好走"dropout 路径"，完全一致。Alibaba EasyRec 开箱可用。**用在召回双塔 item/user 塔内部**，不是排序特征工程；哪怕塔内没有显式分支结构，也只需在特征拼接前对"依赖历史的特征"整体清零，塔结构不用改。
+  - **预测网络（MWUF）**：训练轻量 `predictor(content) → 合成 ID emb`，用热身 item 真实 ID emb 做 MSE 监督；serving 时冷启 item → predictor → 合成 ID emb → 正常 item tower，结构不变，合成 emb 落在热身分布里。改造成本高于 DropoutNet，普及度较小众，多作特定痛点的补充方案。
+  - **Semantic ID（根治，增长最快）**：RQ-VAE 把内容向量量化成离散 token 作为"语义 ID"，新 item 上线即有有意义的 ID，YouTube RecSys'24 落地，适合长期投入；随生成式推荐（TIGER/HSTU 系）成为大厂新方向，是这三者里普及度增长最快的（新架构下是原生标配）。
+  - **工业界普及度排序**：DropoutNet（最广，默认首选）> Semantic ID（快速追赶）> 预测网络 MWUF（较小众）。
 - **item 向量 T+1 太慢**：小时级增量训练（只更新 embedding table）+ HNSW `add_items` 在线追加 + 实时统计特征注入；内容/语义部分日级，热度/行为部分小时级分层处理。
   > 详见 `[多模态召回](../多模态召回/多模态召回.md)` 与 `[热门兜底与冷启动召回](../热门兜底与冷启动召回/热门兜底与冷启动召回.md)`。
 
@@ -201,8 +203,15 @@ in-batch 负偏热门、长尾采不到(SSB)。MNS = **in-batch 负 + 全库均�
 **Q20：双塔怎么缓解冷启动？**
 新 item 用 side info + 内容/多模态 emb 替代没训好的 ID emb(+新品上采样/三塔隔离)；新 user 用画像泛化 + 实时 session + 人群兜底；配合 E&E 探索流量。
 
-**Q22：用户塔用了 Transformer，还需要 SENet 和 LHUC 吗？**
-三者操作层次不同，**不互相替代**：
+**Q21：SENet 和 LHUC 怎么加进双塔优化？**
+两个**塔内增强**，都不破坏可索引性(塔内做、最后仍各出一个向量)。
+
+- **SENet**(FiBiNET)：emb→MLP 间对**特征 field 自适应加权**——Squeeze(field pooling)→Excitation(两层 MLP+sigmoid 出权重，reduction ratio r)→Reweight。突出重要特征、压噪声，缓解信息瓶颈下"特征质量决定上限"。两塔均可加。
+- **LHUC**(PPNet)：用**用户画像生成门控** `g`(`2*sigmoid`，范围 0~2 能放大能抑制)逐元素缩放隐层 `h⊙g`，做 per-user 个性化；gating 输入 **stop-gradient** 防污染主表示。主要加 user 塔。
+- **区别**：SENet 管"哪些特征重要"(特征级)，LHUC 管"针对这个用户怎么调网络"(隐层级、个性化驱动)，可叠加。
+
+**Q22：用户塔用了 Transformer，还需要 SENet 和 LHUC 吗？**三者操作层次不同，**不互相替代**：
+
 - Transformer 做行为**序列**内的时序动态建模（self-attention across tokens）；
 - SENet 做**特征 field 级**加权（包括序列外的静态特征如年龄/城市/会员），Transformer 不操作这些；
 - LHUC 做 **per-user 隐层调制**（MLP 权重共享，LHUC 在 user 侧加 per-user gate），Transformer 权重也是全用户共享，没有 per-user 调制。
@@ -220,12 +229,9 @@ hard search 按候选 item 类目过滤子序列 `S_u`，`S_u` 和正样本天�
 **Q26：item 向量 T+1 更新，某些场景太慢怎么办？**
 分层处理：全量重训（日级，稳定基础语义）+ 增量训练（小时级，只更新 embedding table，新 item 有向量、热 item 向量反映近期行为）+ 索引增量追加（HNSW `add_items`，分钟级，新 item 即时可召回）+ 实时统计特征注入（秒级，不改向量只改特征）。本质：**内容/语义慢变用日级，行为/热度快变用小时级，索引支持在线追加让新 item 即时参与**。
 
-**Q21：SENet 和 LHUC 怎么加进双塔优化？**
-两个**塔内增强**，都不破坏可索引性(塔内做、最后仍各出一个向量)。
-
-- **SENet**(FiBiNET)：emb→MLP 间对**特征 field 自适应加权**——Squeeze(field pooling)→Excitation(两层 MLP+sigmoid 出权重，reduction ratio r)→Reweight。突出重要特征、压噪声，缓解信息瓶颈下"特征质量决定上限"。两塔均可加。
-- **LHUC**(PPNet)：用**用户画像生成门控** `g`(`2*sigmoid`，范围 0~2 能放大能抑制)逐元素缩放隐层 `h⊙g`，做 per-user 个性化；gating 输入 **stop-gradient** 防污染主表示。主要加 user 塔。
-- **区别**：SENet 管"哪些特征重要"(特征级)，LHUC 管"针对这个用户怎么调网络"(隐层级、个性化驱动)，可叠加。
+**Q27：DropoutNet 用在召回还是排序？dropout 的具体对象是什么？**
+用在**召回双塔 item/user 塔内部**（塔内特征融合层），不是排序模型的特征工程。dropout 的对象是**偏好/协同分支整体**（ID emb + 依赖历史统计出来的特征），content 分支永不 dropout；是**整支一次性清零**，不是常规逐神经元的正则化 dropout。塔内不需要显式分支架构——哪怕是单一 MLP，也只需在特征拼接前对"依赖历史的特征"整体清零即可，塔结构不用改。
+> 追问·三条冷启路线工业界哪个用得最多？ → **DropoutNet（最广，训练策略级、零架构改动）> Semantic ID（随生成式推荐快速追赶，新架构下是原生标配）> 预测网络 MWUF（较小众，改造成本更高，多作补充）**。
 
 ---
 
@@ -244,10 +250,4 @@ hard search 按候选 item 类目过滤子序列 `S_u`，`S_u` 和正样本天�
 - **"用 hard search 截断序列可以让模型专注相关行为，不会有问题"** ❌ → hard search 让 `S_u` 和正样本同类目，配合 in-batch 负样本（不同类目）产生 category 数据泄露，需用 In-Context Training 修复。
 
 ---
-
-
-
-## 十二、一句话总结
-
-> 召回 trick 围绕四件事：**样本(未曝光为主+中段难负+logQ)**、**度量(L2 norm + temperature)**、**结构(解耦可索引 + 多向量/蒸馏补瓶颈)**、**链路(多路配额融合 + 独占贡献评估)**。面试主线永远是那句话——**召回是"在亿级里不漏地捞回几百个"，所以样本空间、负样本、可索引性、热门偏置，是它和精排最不一样、也最常被追问的地方。**
 

@@ -504,6 +504,12 @@ item_vec = item_tower_mlp(concat(pref_vec, content_vec))
 
 serving 时冷启 item → preference=0（训练时见过）→ 靠 content 撑着，**train-serving 完全一致**，不存在"训练加 ID、推理 mask 掉"的不一致问题。
 
+> **几个容易问到的细节**：
+> - **用在哪个阶段**：DropoutNet 是**召回双塔 item 塔内部**的特征融合技巧，不是排序阶段的整体特征工程；对称地，冷启动 user 也能在用户塔做同样处理。
+> - **dropout 的对象**：是**偏好/协同分支整体**（ID emb + 依赖交互历史统计出来的特征，如历史 CTR/曝光量/销量），**不是**内容分支（类目/价格/文本/图片等静态属性永不 dropout）；也**不是**逐神经元的常规正则化 dropout，而是整支一次性清零，模拟"这个 item 没有交互历史"的场景。
+> - **没有分支结构也能做**：不要求塔内部是"两分支再融合"的架构。哪怕 item 塔是所有特征拼一起过一个统一 MLP，也只需要在 **concat 之前**，对"依赖历史的那部分特征"按概率整体清零，塔本身（无论单 MLP 还是深度交叉网络）完全不用改，纯粹是输入层的训练策略。
+> - **三条路线工业界排序**：**DropoutNet > Semantic ID > 预测网络(MWUF)**。DropoutNet 是纯训练策略、零架构改动，落地成本最低，是大多数团队的默认首选；Semantic ID 随生成式推荐（TIGER/HSTU 系）成为大厂新方向在快速普及，是这三者里增长最快的（新架构下它是原生标配，不是可选项）；预测网络需要单独训一个 predictor 组件，改造成本更高、通用性不如前两者广，更多是特定痛点下的补充方案而非主方案。
+
 **② 内容预测 ID embedding（MWUF 思路，效果更好）**
 
 训练一个小预测网络 `predictor(content_features) → 合成 ID emb`，用热身 item 的真实 ID emb 做监督（MSE 辅助 loss）：
