@@ -1,4 +1,4 @@
-# I2I 召回（Item-to-Item）· 实战手记
+# I2I 召回（Item-to-Item）· 实践
 
 > 视角：召回算法工程师。I2I 是工业界**最古老也最稳**的通路，"看了又看/买了又买"的底座。覆盖协同类(ItemCF/Swing)和向量类(i2i embedding)两大流派。
 

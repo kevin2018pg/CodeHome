@@ -1,4 +1,4 @@
-# MIND 多兴趣召回 · 实战手记
+# MIND 多兴趣召回 · 实践
 
 > 视角：召回算法工程师。酒店/旅行推荐场景，经历了 **DSSM 双塔 → MIND v1 → MIND v2（Hard Negative + 正交正则 + K 自适应）→ 360 工业化改进** 的完整迭代。
 > 参考：[360多兴趣召回 MIND 实战经验分享](https://zhuanlan.zhihu.com/p/678879375)

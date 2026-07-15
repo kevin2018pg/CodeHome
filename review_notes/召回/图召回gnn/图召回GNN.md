@@ -1,4 +1,4 @@
-# 图召回（DeepWalk / Item2Vec / EGES / GraphSAGE-PinSAGE / LightGCN）· 实战手记
+# 图召回（DeepWalk / Item2Vec / EGES / GraphSAGE-PinSAGE / LightGCN）· 实践
 
 > 视角：召回算法工程师。图召回把 user/item 当节点、交互当边，用**图结构**学 embedding，核心优势是**捕捉高阶关系 + 缓解稀疏**——共现统计（ItemCF/Swing）只能捕捉直接共现，图召回通过多步游走/传播把间接关联也泛化出来。淘宝 EGES、Pinterest PinSage 是工业经典。
 
