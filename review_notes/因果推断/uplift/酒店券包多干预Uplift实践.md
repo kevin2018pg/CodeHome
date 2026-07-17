@@ -327,23 +327,37 @@ $$
 
 ### 1.5 现有《价敏模型训练模板》到底实现了什么
 
-文件：`价敏模型训练模板.ipynb`。它不是 TARNet，主体是：
+核心文件是 `价敏模型训练模板.ipynb`（109 个 cell），周边还有：
 
 ```text
-多档酒店折扣 treatment
-  ↓
-XGBoost S-Learner：把 trt 和用户特征一起输入，预测 is_call
-  ↓
-对同一用户遍历修改 trt，得到每档折扣的 p_t
-  ↓
-计算 p_t-p_control、AUUC 和价敏曲线
-  ↓
-KMeans 将用户压缩成价格敏感人群桶
-  ↓
-OR-Tools MIP 在补贴上下限约束下分配折扣
+DeepUplift-main/          TARNet、DragonNet、EFIN、DESCN 等深度模型参考库
+xlearner模板.ipynb        X-Learner 独立模板
+pulearning模板.ipynb      PU Learning 模板
+efin/                     KDD 2023 EFIN 复现
+multi-task-learning-main/ MMoE/PLE 多任务示例
 ```
 
-Notebook 还实验了二元 Uplift Random Forest，但主链路仍是 S-Learner + 运筹。
+这些参考库**没有接入主 Notebook 的端到端生产链路**。不能因为目录中存在 TARNet/DragonNet 代码，就把酒店模板描述成深度 Uplift。
+
+主 Notebook 实际拼接了三段相对独立的流程：
+
+```text
+A. 酒店券补：XGBoost S-Learner → 反事实价敏曲线
+B. 顺风车加价：二元 Uplift Random Forest
+C. 景区补贴：KMeans 人群桶 → OR-Tools MIP 全局分配
+```
+
+酒店主链路具体是：
+
+```text
+trt 与用户特征共同输入 XGBoost，预测 is_call
+  ↓
+对同一用户反复覆写 trt，得到每档折扣的 p_t
+  ↓
+逐 treatment 相对基准档计算 p_t-p_0 和 AUUC
+  ↓
+生成 favor_* 价敏曲线，供后续分群/运筹使用
+```
 
 模板中需要特别警惕：
 
@@ -352,7 +366,12 @@ Notebook 还实验了二元 Uplift Random Forest，但主链路仍是 S-Learner 
 3. 采用随机 train/test split，正式评估应改为时间切分，并保证同一用户不穿越；
 4. S-Learner 可能忽略 `trt`，应检查每档 counterfactual 预测是否真的有区分，并与 T-Learner/TARNet 基线比较；
 5. Notebook 的 AUUC 是逐个 treatment 与 `0` 做 one-vs-control，不能代表“从全部档位中选最优券”的整体 policy value；
-6. 最后的 MIP 思路是对的：Uplift/价敏模型负责产出响应曲线，运筹负责在平均补贴率、库存和预算约束下做全局最优分配。
+6. 训练只覆盖 `trt=0...9`，部分价敏曲线代码却推理 `trt=10`，属于超出训练支持域的 OOD 外推；
+7. 某段模拟代码用 `favor_0=favor_1×0.8` 人工构造基准响应，这只能做演示，不能用于真实因果评估或上线；
+8. Qini、uplift percentile 虽然被 import，但主流程没有真正调用；因果森林段还在训练集上计算 AUUC，结果会严重乐观；
+9. `cluster_model` 对 scaler 重复 `fit_transform`，训练聚类和预测使用的缩放器可能不一致，应保存训练 scaler 后只调用 `transform`；
+10. PSI 章节只是空标题，没有实际漂移监控；正式生产需要监控特征 PSI、treatment 占比、propensity、响应曲线和策略分配漂移；
+11. 最后的 MIP 思路是对的：Uplift/价敏模型负责产出响应曲线，运筹负责在平均补贴率、库存和预算约束下做全局最优分配。但当前目标主要是最大单量/GMV，并未真正实现 `GMV+λ×毛利`，要增加毛利和补贴成本项。
 
 ---
 
