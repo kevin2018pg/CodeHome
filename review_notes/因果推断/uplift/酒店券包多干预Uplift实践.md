@@ -27,21 +27,21 @@ Uplift 模型回答：
 
 潜在结果的条件期望：
 
-$$
+\[
 \mu_t(x)=\mathbb{E}[Y(t)\mid X=x]
-$$
+\]
 
 treatment \(t\) 相对基准动作的条件平均处理效应：
 
-$$
+\[
 \tau_t(x)=\mu_t(x)-\mu_0(x),\qquad t=1,\ldots,K
-$$
+\]
 
 同一用户在同一时刻只能接受一个 treatment，因此只能观察：
 
-$$
+\[
 Y_i^{obs}=Y_i(T_i)
-$$
+\]
 
 其他 \(Y_i(t)\) 都是反事实。模型做差发生在**预测阶段**：对同一用户预测多个潜在结果，再计算相对基准动作的差；不是要求一条训练样本同时拥有多个 label。
 
@@ -62,9 +62,9 @@ $$
 2. **可忽略性**：给定全部干预前混杂因素后，treatment 分配与潜在结果独立。
 3. **重叠性**：目标人群中的每种 treatment 都有被分配的可能：
 
-$$
+\[
 0<e_t(x)=P(T=t\mid X=x)<1,\qquad \forall t
-$$
+\]
 
 随机实验主要解决 treatment 分配偏差，但广告竞价、出行供需等场景还可能存在用户间干扰，不能只靠普通用户级随机分桶。
 
@@ -241,15 +241,15 @@ Shared Bottom
 
 训练时只监督样本实际 treatment 对应的 head：
 
-$$
+\[
 \mathcal{L}_{outcome}=\frac{1}{N}\sum_{i=1}^{N}\ell\!\left(Y_i,\hat{\mu}_{T_i}(X_i)\right)
-$$
+\]
 
 预测时遍历全部券档：
 
-$$
+\[
 \hat{\tau}_t(x)=\hat{\mu}_t(x)-\hat{\mu}_0(x)
-$$
+\]
 
 非随机数据可使用 DR-Learner，详见第九章。
 
@@ -266,9 +266,9 @@ $$
 
 对每个用户计算各券档的增量净价值 \(V_{i,t}\)，而不是只比较转化 uplift：
 
-$$
+\[
 t_i^*=\arg\max_{t\in\{0,\ldots,K\}}V_{i,t}
-$$
+\]
 
 将不发券定义为 \(V_{i,0}=0\)。预算充足时只发放 \(V_{i,t}>0\) 的最优券；预算受限时再使用第十一章的拉格朗日影子价格、ROI、库存和频控约束。
 
@@ -312,15 +312,15 @@ Y：分组后7日搜索量
 
 7 日搜索量通常零膨胀且长尾，可使用 Hurdle：
 
-$$
+\[
 \mu_t(x)=P(Y(t)>0\mid X=x)\cdot\mathbb{E}[Y(t)\mid Y(t)>0,X=x]
-$$
+\]
 
 若将搜索量分成 10 档，必须用每档真实搜索量代表值还原条件期望：
 
-$$
+\[
 \hat{\mu}_t(x)=\sum_{b=1}^{10}P(B(t)=b\mid X=x)\,\bar{y}_b
-$$
+\]
 
 不能直接把两个类别编号相减。其他可比较方案包括 `log1p` 回归、Poisson/Tweedie、Huber loss 和 winsorize。
 
@@ -337,9 +337,9 @@ DART 只能缓解树模型过拟合，不能修复 treatment 选择偏差。
 
 设一次展示的业务成本为 \(c(x)\)，每次增量搜索的价值为 \(v_s\)：
 
-$$
+\[
 V_{show}(x)=v_s\,\hat{\tau}(x)-c(x)
-$$
+\]
 
 仅对 \(V_{show}(x)>0\) 的用户展示，再叠加频控、覆盖人数和用户体验约束。若展示成本可忽略，则按 uplift 排序并由流量配额截断。
 
@@ -378,15 +378,15 @@ Y：平台整体GMV、平台营收或转化
 
 匹配后的 ATT 估计：
 
-$$
+\[
 \widehat{ATT}=\frac{1}{N_T}\sum_{i:T_i=1}\left(Y_i-\sum_{j\in\mathcal{N}_K(i)}w_{ij}Y_j\right)
-$$
+\]
 
 其中：
 
-$$
+\[
 \sum_{j\in\mathcal{N}_K(i)}w_{ij}=1
-$$
+\]
 
 必须检查匹配前后的 SMD、匹配距离、丢弃率、control 复用次数和有效样本量。Matching 只能平衡已观察变量，无法修复未记录的竞价和人工规则。
 
@@ -405,9 +405,9 @@ $$
 
 #### S-Learner Baseline
 
-$$
+\[
 \hat{\mu}(x,t)=f(x,t),\qquad \hat{\tau}(x)=f(x,1)-f(x,0)
-$$
+\]
 
 原文实验中，普通预估模型 AUC 尚可但 Qini 为负；增加 DNN 后 AUC 提升，Uplift 反而更差。这说明 outcome 预测能力不等于效应估计能力。
 
@@ -429,17 +429,17 @@ Shared Representation
 
 若 outcome 是二元变量，不应直接在概率上无约束相加。更稳妥的 logit 残差写法：
 
-$$
+\[
 \hat{\mu}_0(x)=\sigma(z_0(x))
-$$
+\]
 
-$$
+\[
 \hat{\mu}_1(x)=\sigma\!\left(z_0(x)+\delta(x)\right)
-$$
+\]
 
-$$
+\[
 \hat{\tau}(x)=\hat{\mu}_1(x)-\hat{\mu}_0(x)
-$$
+\]
 
 \(\delta(x)\) 是广告在 logit 空间的增量，两个潜在结果始终位于 \([0,1]\)。若业务原模型在概率空间做加法，则必须显式 clip 或使用合法链接函数。
 
@@ -455,9 +455,9 @@ $$
 
 将广告投放带来的平台增量价值记为 \(\Delta R(x)\)，广告挤占自然交易和体验损失记为 \(\Delta L(x)\)：
 
-$$
+\[
 V_{ad}(x)=\Delta R(x)-\Delta L(x)
-$$
+\]
 
 可将 \(V_{ad}(x)\) 作为广告准入、参竞概率或预算分配的 reward，并把广告主 ROI、平台收入下限和自然流量损失作为 constraints。
 
@@ -506,15 +506,15 @@ Shared Representation
 
 多 outcome factual loss：
 
-$$
+\[
 \mathcal{L}=\frac{1}{N}\sum_{i=1}^{N}\sum_m\omega_m\,\ell_m\!\left(Y_{i,m},\hat{\mu}_{T_i,m}(X_i)\right)
-$$
+\]
 
 残差门控可写为：
 
-$$
+\[
 h_{t,m}=g_{t,m}(h)\odot F_{t,m}(h)+\left(1-g_{t,m}(h)\right)\odot P_{t,m}(h)
-$$
+\]
 
 其中 \(P_{t,m}\) 在维度不同时必须做投影。门控增强的是共享与拟合，不是因果识别来源。
 
@@ -531,27 +531,27 @@ $$
 
 对每个 treatment 计算：
 
-$$
+\[
 \widehat{GMV}_t(x)=\sum_m \hat{B}_{t,m}(x)\cdot\hat{\mu}_{t,m}(x)\cdot Price_{t,m}(x)
-$$
+\]
 
-$$
+\[
 \widehat{M}_t(x)=\sum_m \hat{B}_{t,m}(x)\cdot\hat{\mu}_{t,m}(x)\cdot UnitMargin_{t,m}(x)
-$$
+\]
 
 其中 \(\hat{B}_{t,m}(x)\) 是 treatment \(t\) 下业务 \(m\) 的预测冒泡量。若补贴会改变业务间流量，就不能把冒泡量固定为与 treatment 无关的 \(B_m(x)\)。
 
 设 \(\Delta C_t(x)\) 为补贴组合相对基准组合的增量成本，则增量净价值为：
 
-$$
+\[
 V_t(x)=\left[\widehat{M}_t(x)-\widehat{M}_0(x)\right]-\Delta C_t(x)
-$$
+\]
 
 若业务同时考核 GMV 与净价值，用 \(\alpha\) 表示两者的兑换系数，避免与预算影子价格 \(\lambda\) 混用：
 
-$$
+\[
 Score_t(x)=\left[\widehat{GMV}_t(x)-\widehat{GMV}_0(x)\right]+\alpha V_t(x)
-$$
+\]
 
 最后在预算、供需安全和折扣约束下最大化 \(Score_t(x)\)，不能只按逐单最高 ABR 贪心。
 
@@ -592,9 +592,9 @@ Y：曝光、转化、GMV、平台收入或消耗
 
 离散出价可用多 treatment T-Learner/TARNet/DR；连续出价可学习剂量响应：
 
-$$
+\[
 \mu(x,b)=\mathbb{E}[Y(b)\mid X=x]
-$$
+\]
 
 对连续 action，必须保证各价格区间有探索覆盖；模型不能在没有支持的高出价区域随意外推。
 
@@ -609,15 +609,15 @@ $$
 
 单请求边际价值：
 
-$$
+\[
 V(x,b)=\Delta\text{Benefit}(x,b)-\Delta\text{Cost}(x,b)
-$$
+\]
 
 预算影子价格下：
 
-$$
+\[
 b_\lambda^*(x)=\arg\max_b\left[V(x,b)-\lambda\,\Delta\text{Cost}(x,b)\right]
-$$
+\]
 
 选择最大值为正的出价档，并叠加广告主 ROI、pacing、流量质量和平台收入约束。
 
@@ -629,9 +629,9 @@ $$
 
 每个 treatment 一个模型：
 
-$$
+\[
 \hat{\tau}_t(x)=\hat{\mu}_t(x)-\hat{\mu}_0(x)
-$$
+\]
 
 适合 treatment 少、各组样本充足、需要可信基线的场景。缺点是样本被拆散，模型维护成本高。
 
@@ -639,9 +639,9 @@ $$
 
 一个模型输入 treatment：
 
-$$
+\[
 \hat{\mu}_t(x)=f(x,t)
-$$
+\]
 
 推理时对同一用户遍历所有 treatment。优点是维护简单；缺点是用户特征过强时模型容易忽略 treatment。
 
@@ -660,15 +660,15 @@ $$
 
 对 treatment \(t\) 相对 control 的 DR 伪标签：
 
-$$
+\[
 \phi_{i,t}=\hat{\mu}_t(X_i)-\hat{\mu}_0(X_i)+\frac{\mathbf{1}(T_i=t)}{\hat{e}_t(X_i)}\left(Y_i-\hat{\mu}_t(X_i)\right)-\frac{\mathbf{1}(T_i=0)}{\hat{e}_0(X_i)}\left(Y_i-\hat{\mu}_0(X_i)\right)
-$$
+\]
 
 第二阶段学习：
 
-$$
+\[
 \hat{\tau}_t(x)=\mathbb{E}[\phi_{i,t}\mid X_i=x]
-$$
+\]
 
 要求：
 
@@ -706,15 +706,15 @@ $$
 
 按预测 uplift 从高到低分桶。非等比例实验或观察数据中，桶 \(b\) 内 treatment \(t\) 的加权 outcome：
 
-$$
+\[
 \hat{\mu}_{t,b}=\frac{\sum_{i\in b}\mathbf{1}(T_i=t)Y_i/\hat{e}_t(X_i)}{\sum_{i\in b}\mathbf{1}(T_i=t)/\hat{e}_t(X_i)}
-$$
+\]
 
 相对 control 的真实分桶 uplift：
 
-$$
+\[
 \widehat{Uplift}_{t,b}=\hat{\mu}_{t,b}-\hat{\mu}_{0,b}
-$$
+\]
 
 等概率随机实验中权重相同，可以退化为两组样本均值之差。
 
@@ -729,21 +729,21 @@ $$
 
 给定策略 \(\pi(x)\)，IPS：
 
-$$
+\[
 \hat{V}_{IPS}(\pi)=\frac{1}{N}\sum_{i=1}^{N}\frac{\mathbf{1}\!\left(T_i=\pi(X_i)\right)Y_i}{\hat{e}_{T_i}(X_i)}
-$$
+\]
 
 SNIPS：
 
-$$
+\[
 \hat{V}_{SNIPS}(\pi)=\frac{\sum_i\mathbf{1}\!\left(T_i=\pi(X_i)\right)Y_i/\hat{e}_{T_i}(X_i)}{\sum_i\mathbf{1}\!\left(T_i=\pi(X_i)\right)/\hat{e}_{T_i}(X_i)}
-$$
+\]
 
 DR Policy Value：
 
-$$
+\[
 \hat{V}_{DR}(\pi)=\frac{1}{N}\sum_{i=1}^{N}\left[\hat{\mu}_{\pi(X_i)}(X_i)+\frac{\mathbf{1}\!\left(T_i=\pi(X_i)\right)}{\hat{e}_{T_i}(X_i)}\left(Y_i-\hat{\mu}_{T_i}(X_i)\right)\right]
-$$
+\]
 
 策略模型、propensity 和 outcome 模型都应使用与评估样本隔离的数据或交叉拟合，避免策略价值乐观。
 
@@ -784,23 +784,23 @@ C：随机探索桶
 
 条件增量：
 
-$$
+\[
 \Delta G_{i,t}=\mathbb{E}[G_i(t)-G_i(0)\mid X_i]
-$$
+\]
 
-$$
+\[
 \Delta M_{i,t}=\mathbb{E}[M_i(t)-M_i(0)\mid X_i]
-$$
+\]
 
-$$
+\[
 \Delta C_{i,t}=\mathbb{E}[C_i(t)-C_i(0)\mid X_i]
-$$
+\]
 
 增量净价值：
 
-$$
+\[
 V_{i,t}=\Delta M_{i,t}-\Delta C_{i,t}
-$$
+\]
 
 这是通用公式，不依赖“各 treatment 客单价相同”的假设。
 
@@ -808,25 +808,25 @@ $$
 
 设 \(p_{i,t}=P(Order_i(t)=1\mid X_i)\)。一般情况下：
 
-$$
+\[
 \Delta M_{i,t}=p_{i,t}m_{i,t}-p_{i,0}m_{i,0}
-$$
+\]
 
 其中 \(m_{i,t}\) 是 treatment \(t\) 下成交后的条件贡献毛利。
 
 只有近似认为 \(m_{i,t}=m_{i,0}=m_i\) 时，才能简化为：
 
-$$
+\[
 \Delta M_{i,t}\approx\left(p_{i,t}-p_{i,0}\right)m_i=\tau_{i,t}m_i
-$$
+\]
 
 因此原先直接使用 \(\delta P_{i,t}g_{i,t}\) 的写法并不通用：券可能改变客单价、酒店星级和订单结构。
 
 若券在核销时才产生成本，且 control 没有营销成本：
 
-$$
+\[
 \Delta C_{i,t}=P(Redeem_i(t)=1\mid X_i)\cdot q_t
-$$
+\]
 
 若发放即产生成本，则直接使用发放成本，不再乘核销概率。
 
@@ -834,21 +834,21 @@ $$
 
 增量 GMV ROI：
 
-$$
+\[
 iROI_{GMV}=\frac{\Delta\text{GMV}}{\Delta\text{MarketingCost}}
-$$
+\]
 
 增量贡献毛利 ROI：
 
-$$
+\[
 iROI_{margin}=\frac{\Delta\text{ContributionMargin}}{\Delta\text{MarketingCost}}
-$$
+\]
 
 净利润 ROI：
 
-$$
+\[
 ROI_{net}=\frac{\Delta\text{ContributionMargin}-\Delta\text{MarketingCost}}{\Delta\text{MarketingCost}}=iROI_{margin}-1
-$$
+\]
 
 因此：
 
@@ -858,9 +858,9 @@ $$
 
 每增量订单成本：
 
-$$
+\[
 CPIO=\frac{\Delta\text{MarketingCost}}{\Delta\text{Orders}}
-$$
+\]
 
 control 无营销成本时，分子等于 treatment 组营销成本；分母始终是相对 control 的增量订单，不能使用 treatment 组总订单。
 
@@ -870,41 +870,41 @@ control 无营销成本时，分子等于 treatment 组营销成本；分母始�
 
 最大化总增量净价值：
 
-$$
+\[
 \max_x\sum_{i,t}V_{i,t}x_{i,t}
-$$
+\]
 
 每个用户最多一个 treatment：
 
-$$
+\[
 \sum_t x_{i,t}\le 1,\qquad \forall i
-$$
+\]
 
 预算约束：
 
-$$
+\[
 \sum_{i,t}\Delta C_{i,t}x_{i,t}\le B
-$$
+\]
 
 最低贡献毛利 ROI 约束：
 
-$$
+\[
 \sum_{i,t}\Delta M_{i,t}x_{i,t}\ge \rho_{\min}\sum_{i,t}\Delta C_{i,t}x_{i,t}
-$$
+\]
 
 当 \(\rho_{\min}=1\) 时，对应贡献毛利覆盖营销成本。
 
 预算约束的拉格朗日函数：
 
-$$
+\[
 \mathcal{L}(x,\lambda)=\sum_{i,t}\left(V_{i,t}-\lambda\Delta C_{i,t}\right)x_{i,t}+\lambda B,\qquad \lambda\ge 0
-$$
+\]
 
 给定 \(\lambda\) 后，用户级选择：
 
-$$
+\[
 t_i^*(\lambda)=\arg\max_{t\in\{0,\ldots,K\}}\left(V_{i,t}-\lambda\Delta C_{i,t}\right)
-$$
+\]
 
 其中将 control 定义为 \(V_{i,0}=0,\Delta C_{i,0}=0\)，即可自然选择“不干预”。
 
