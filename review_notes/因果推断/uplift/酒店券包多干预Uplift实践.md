@@ -836,7 +836,7 @@ mu_hat_t(x) = f(x,t)
 
 ### 9.4 DR-Learner
 
-对 treatment `t` 相对 control 的 DR 伪标签：
+仅预测 `mu_t - mu_0` 容易受到 outcome 模型误差影响。多 treatment 的 Doubly Robust 伪标签：
 
 ```text
 phi_{i,t} = mu_hat_t(X_i) - mu_hat_0(X_i)
@@ -850,10 +850,12 @@ phi_{i,t} = mu_hat_t(X_i) - mu_hat_0(X_i)
 tau_hat_t(x) = E[phi_{i,t} | X_i=x]
 ```
 
+“双重稳健”：outcome 模型或 propensity 模型只要有一个估计正确，效应估计仍有机会保持一致。
+
 要求：
 
-- nuisance models 必须 cross-fitting；
-- propensity 过小时 clip/trim；
+- nuisance models 必须 cross-fitting（给某折样本造伪标签时， nuisance 模型不能见过该折）；
+- propensity 过小时 clip/trim，避免权重爆炸；
 - 样本不足时 DR 高方差，未必优于简单 T-Learner；
 - 双重稳健不代表两个模型都可以随意训练。
 
