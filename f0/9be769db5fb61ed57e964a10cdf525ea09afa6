@@ -1,0 +1,19 @@
+review_notes/因果推断/uplift/酒店券包多干预Uplift实践.md
+  s_f1fba674c90fad::t_f204349dcf64d0 839,853-854,857-858
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "f09be769db5fb61ed57e964a10cdf525ea09afa6",
+  "prompts": {},
+  "sessions": {
+    "s_f1fba674c90fad": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "3e5627b7-5e04-4eec-bb89-fe1086ba61c1",
+        "model": "default"
+      },
+      "human_author": "chendong <dong4.chen@ly.com>"
+    }
+  }
+}
