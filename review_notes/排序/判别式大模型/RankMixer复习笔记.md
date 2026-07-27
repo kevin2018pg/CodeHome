@@ -2,6 +2,8 @@
 
 > 论文：**RankMixer: Scaling Up Ranking Models in Industrial Recommenders**（ByteDance，2025）  
 > 本文目标：理解 RankMixer 为什么这样设计、每一步的张量变化、工业特征如何变成 token，以及当前仓库实现与论文的差距。
+>
+> 架构定位：RankMixer 属于非序列特征交叉的 Scaling 路线，不是完整的序列—交叉统一模型。整体演进见[《序列建模、特征交叉与统一架构演进》](./序列建模、特征交叉与统一架构演进.md)。
 
 ---
 

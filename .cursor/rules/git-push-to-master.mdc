@@ -1,0 +1,17 @@
+---
+description: Git 推送默认合并到 github master
+alwaysApply: true
+---
+
+# Git 推送目标
+
+用户要求：需要推送远程时，默认合并并推送到 `github` 的 `master` 分支，不要只停在功能分支（如 `clean-push`）。
+
+流程：
+
+1. 在当前工作分支完成 commit
+2. 将变更合并到本地 `master`（优先 fast-forward；有冲突再解决）
+3. `git push github master`
+4. 向用户确认已推到 `master`
+
+除非用户明确指定其他远程分支或要求只开 PR 不合并，否则按上述执行。
