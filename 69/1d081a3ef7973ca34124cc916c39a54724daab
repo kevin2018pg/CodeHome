@@ -1,0 +1,24 @@
+review_notes/排序/rankmixer/RankMixer复习笔记.md
+  s_f1fba674c90fad::t_9bf36ff8ee5ae9 1-758
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "691d081a3ef7973ca34124cc916c39a54724daab",
+  "prompts": {},
+  "humans": {
+    "h_5d931ba58df68b": {
+      "author": "chendong <dong4.chen@ly.com>"
+    }
+  },
+  "sessions": {
+    "s_f1fba674c90fad": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "3e5627b7-5e04-4eec-bb89-fe1086ba61c1",
+        "model": "unknown"
+      },
+      "human_author": "chendong <dong4.chen@ly.com>"
+    }
+  }
+}
