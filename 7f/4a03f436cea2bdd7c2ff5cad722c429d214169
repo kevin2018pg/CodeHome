@@ -1,0 +1,30 @@
+.gitignore
+  s_f1fba674c90fad::t_a906cac5f6f6e8 32-33
+  s_f1fba674c90fad::t_8ab9cf75ff44d0 31
+review_notes/排序/判别式大模型/经典精排模型复习：特征交叉、序列与多任务.md
+  h_5d931ba58df68b 778-781,784-786,789,795-797,799-801,804,808-809,812-817,822,824-828,831,837-839,848-849,856-857
+review_notes/排序/判别式大模型/序列建模、特征交叉与统一架构演进.md
+  h_5d931ba58df68b 267,436,584,838,938,1028,1240,1377,1584,1887
+  s_f1fba674c90fad::t_d21c88bc71a866 848
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "7f4a03f436cea2bdd7c2ff5cad722c429d214169",
+  "prompts": {},
+  "humans": {
+    "h_5d931ba58df68b": {
+      "author": "chendong <dong4.chen@ly.com>"
+    }
+  },
+  "sessions": {
+    "s_f1fba674c90fad": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "3e5627b7-5e04-4eec-bb89-fe1086ba61c1",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "chendong <dong4.chen@ly.com>"
+    }
+  }
+}
