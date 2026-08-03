@@ -28,3 +28,6 @@ test_output.txt
 # 系统文件
 .DS_Store
 Thumbs.db
+
+# 本地资料
+/review_notes/local_docs/
