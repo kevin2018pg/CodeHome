@@ -1,0 +1,27 @@
+review_notes/排序/判别式大模型/序列建模、特征交叉与统一架构演进.md
+  h_5d931ba58df68b 513-605
+  s_f1fba674c90fad::t_977bd155c30331 1479
+review_notes/排序/判别式大模型/RankMixer复习笔记.md
+  s_f1fba674c90fad::t_87b0f8e2bb2407 424,432,435-448,455-456,460-468
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "6053381383bdfd266266dd08556fd5e4b1c7a1c5",
+  "prompts": {},
+  "humans": {
+    "h_5d931ba58df68b": {
+      "author": "chendong <dong4.chen@ly.com>"
+    }
+  },
+  "sessions": {
+    "s_f1fba674c90fad": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "3e5627b7-5e04-4eec-bb89-fe1086ba61c1",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "chendong <dong4.chen@ly.com>"
+    }
+  }
+}
