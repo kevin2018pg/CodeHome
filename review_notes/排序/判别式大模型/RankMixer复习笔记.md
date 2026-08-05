@@ -421,7 +421,7 @@ v_i = sum_j G_(i,j) * Expert_(i,j)(s_i)
 
 总参数可随专家数 E 增长，而推理只激活部分专家，计算量受控。
 
-### 6.2 ReLU Routing
+### 6.2 ReLU Routing 与平衡 / 稀疏 Loss
 
 传统 MoE 常用：
 
@@ -429,20 +429,42 @@ v_i = sum_j G_(i,j) * Expert_(i,j)(s_i)
 Top-k + Softmax
 ```
 
-RankMixer 使用 ReLU gate，并通过 L1 类正则控制整体激活预算：
+并配合 Switch 类 load balancing：
 
 ```text
-G_i = ReLU(router_i(s_i))
-L = L_task + lambda * sum_(i,j) G_(i,j)
+L_balance = α · N · Σ_i (f_i · P_i)   # N=专家数，不是 token 数
+```
+
+- `f_i`：实际选中 expert i 的比例（Top-K mask）
+- `P_i`：Softmax 平均概率
+- 精排 MMoE→SMoE：在**样本维**上统计（对 `B` 平均；多任务则各 Gate 各算一份再相加）
+- 若用在 per-token MoE：在**token 维**上统计（对 `B×T` 平均）
+
+RankMixer 主推 ReLU gate + L1，控制整体激活预算（不是 \(f_i\) 均匀性）：
+
+```text
+G_{b,t,j} = ReLU(router(s_{b,t}))_j
+L_reg = mean_{b,t}( Σ_j G_{b,t,j} )    # 所有样本×token 的平均「门控激活总量」
+L     = L_task + λ · L_reg
 ```
 
 直觉：
 
 - 信息量高的 token 可以激活更多 expert；
 - 信息量低的 token 可以少激活；
-- 不强迫所有 token 使用完全相同的 top-k 预算。
+- 不强迫所有 token 使用完全相同的 top-k 预算；
+- L1 压的是总激活量，**不是**每个专家的路由率 \(f_i\)；专家充分训练靠 DTSI。
 
 极端情况下所有 gate 为 0，需要工程上设置数值保护或保底 expert。
+
+两套对照：
+
+```text
+Softmax balance：拉齐各专家负载（样本维或 token 维上的 f、P）
+ReLU + L1：      把平均激活总量压到稀疏预算（token 维 mean ΣG）
+```
+
+更完整的数值例子见[《序列建模、特征交叉与统一架构演进》](./序列建模、特征交叉与统一架构演进.md) §5.6。
 
 ### 6.3 Dense Training / Sparse Inference（DTSI）
 
