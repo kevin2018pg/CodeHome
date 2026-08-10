@@ -1,0 +1,27 @@
+review_notes/召回/u2i双塔召回/U2I双塔召回.md
+  h_5d931ba58df68b 508,542-549
+review_notes/召回/mind多兴趣召回/MIND多兴趣召回.md
+  h_5d931ba58df68b 22-23,32,46-47,50-51,70,93,103,111,125,162-163,228,258-259,262-263,297,324,344,363,388
+  s_1bbb250bfb94d1::t_670d454ccbb0fa 18,33,69,92,102,110,126,178,229,296,323,343,362,389
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "5452b36709402a61e4ed78a195b3e98e65d0d7a8",
+  "prompts": {},
+  "humans": {
+    "h_5d931ba58df68b": {
+      "author": "chendong <dong4.chen@ly.com>"
+    }
+  },
+  "sessions": {
+    "s_1bbb250bfb94d1": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "69f0f77f-715a-4d85-be5f-d549ae13a9b0",
+        "model": "unknown"
+      },
+      "human_author": "chendong <dong4.chen@ly.com>"
+    }
+  }
+}
